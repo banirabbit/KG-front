@@ -1,4 +1,4 @@
-import { FormControl, Grid, MenuItem, Select } from "@mui/material";
+import { FormControl, Grid, MenuItem, Select, Switch } from "@mui/material";
 import "./LayoutDialog.css";
 import { NumberInput } from "../NumberInput";
 interface ChildProps {
@@ -12,6 +12,8 @@ interface ChildProps {
   setFocusNode: any;
   unitRadius: any;
   setUnitRadius: any;
+  sort: any;
+  setSort: any;
   prevOverlap: any;
   setPrevOverlap: any;
   strict: any;
@@ -30,6 +32,8 @@ export default function Radial({
   setFocusNode,
   unitRadius,
   setUnitRadius,
+  sort,
+  setSort,
   prevOverlap,
   setPrevOverlap,
   strict,
@@ -120,19 +124,59 @@ export default function Radial({
           <Grid item>
             <FormControl variant="standard" sx={{ m: 1, minWidth: 90 }}>
               <Select
-                labelId="demo-simple-select-standard-label"
-                id="demo-simple-select-standard"
+                id="radial-focusnode-select"
                 value={focusNode}
                 label="FocusNode"
               >
                 <MenuItem
-                  value={"degree"}
-                  onClick={() => setFocusNode("node11")}
+                  value={"node11"}
+                  onClick={() => {setFocusNode("node11")}}
                 >
                   node1
                 </MenuItem>
               </Select>
             </FormControl>
+          </Grid>
+        </Grid>
+      </Grid>
+      <Grid item>
+        <Grid container direction="row" spacing={4} alignItems="center">
+          <Grid item>Sort: </Grid>
+          <Grid item>
+            <FormControl variant="standard" sx={{ m: 1, minWidth: 90 }}>
+              <Select
+                id="radial-sortby-select"
+                value={sort}
+                label="SortBy"
+              >
+                <MenuItem
+                  value={"undefined"}
+                  onClick={() => {setFocusNode("undefined")}}
+                >
+                  最短路径
+                </MenuItem>
+                <MenuItem
+                  value={"data"}
+                  onClick={() => {setFocusNode("data")}}
+                >
+                  数据
+                </MenuItem>
+              </Select>
+            </FormControl>
+            <Grid item>PreventOverLap: </Grid>
+            <Grid item>
+                      False
+                      <Switch
+                        checked={prevOverlap}
+                        onChange={(
+                          event: React.ChangeEvent<HTMLInputElement>
+                        ) => {
+                          setPrevOverlap(event.target.checked);
+                        }}
+                        inputProps={{ "aria-label": "controlled" }}
+                      />
+                      True
+                    </Grid>
           </Grid>
         </Grid>
       </Grid>

@@ -40,7 +40,6 @@ function App() {
     }
     const graph = new G6.Graph({
       container,
-      height: 500,
       modes: {
         default: ["drag-canvas", "drag-node"],
         edit: ["click-select"],
@@ -79,7 +78,7 @@ function App() {
       },
       layout: {
         type: "random",
-        center: [500, 300], // 可选，默认为图的中心
+        // center: [500, 300], // 可选，默认为图的中心
         // linkDistance: 200, // 可选，边长
         // maxIteration: 1000, // 可选
         // focusNode: "node11", // 可选
@@ -90,7 +89,7 @@ function App() {
         // workerEnabled: true, // 可选，开启 web-worker
       },
       animate: true,
-      plugins: [miniMap],
+      //plugins: [miniMap],
     });
     const edges = graph.getEdges();
     edges.forEach((edge: { getKeyShape: () => any; getTarget: () => any }) => {
@@ -104,7 +103,7 @@ function App() {
     graph.data(data);
     graph.render();
     console.log(layoutInfo);
-  //  graph.updateLayout(layoutInfo);
+    graph.updateLayout(layoutInfo);
     return () => {
       // 销毁G6图形实例
       graph.destroy();

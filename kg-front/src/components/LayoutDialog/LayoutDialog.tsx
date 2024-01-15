@@ -54,22 +54,26 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
   ];
   const dispatch = useDispatch();
   const [param, setParam] = useState(false);
+  //屏幕中心
   const [centerNumber, setCenterNumber] = useState({
-    from: 500,
-    to: 300,
+    from: window.innerWidth / 2,
+    to: window.innerHeight / 2,
   });
+  //环形布局的参数
   const [radius, setRadius] = useState(200);
   const [check, setCheck] = useState(false);
   const [divisions, setDivisions] = useState(5);
   const [order, setOrder] = useState("degree");
   const [angle, setAngle] = useState(1);
-  const [linkDis, setLinkDis] = useState(200);
-  const [maxIter, setMaxIter] = useState(1000);
-  const [focusNode, setFocusNode] = useState("node11");
-  const [unitRadius, setUnitRadius] = useState(100);
-  const [prevOverlap, setPrevOverlap] = useState(true); // 可选，必须配合 nodeSize
-  const [strict, setStrict] = useState(false); // 可选
-  const [worker, setWorker] = useState(true); // 可选，开启 web-worker
+  //辐射布局的参数
+  const [linkDis, setLinkDis] = useState(200); //边长度
+  const [maxIter, setMaxIter] = useState(1000); //停止迭代到最大迭代数
+  const [focusNode, setFocusNode] = useState("node11"); //辐射的中心点
+  const [unitRadius, setUnitRadius] = useState(100); //每一圈距离上一圈的距离
+  const [sort, setSort] = useState('undefined'); //同层节点布局后相距远近的依据
+  const [prevOverlap, setPrevOverlap] = useState(true); //是否防止重叠
+  const [strict, setStrict] = useState(false); //是否必须是严格的 radial 布局，及每一层的节点严格布局在一个环上
+  const [worker, setWorker] = useState(true); //是否启用 web-worker 以防布局计算时间过长阻塞页面交互
   const handleSet = async () => {
     if (type === "circular") {
       dispatch(
@@ -245,8 +249,7 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
                         sx={{ m: 1, minWidth: 90 }}
                       >
                         <Select
-                          labelId="demo-simple-select-standard-label"
-                          id="demo-simple-select-standard"
+                          id="circule-order-select"
                           value={order}
                           label="Order"
                         >
@@ -346,6 +349,8 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
                 setFocusNode={setFocusNode}
                 unitRadius={unitRadius}
                 setUnitRadius={setUnitRadius}
+                sort={sort}
+                setSort = {setSort}
                 prevOverlap={prevOverlap}
                 setPrevOverlap={setPrevOverlap}
                 strict={strict}
