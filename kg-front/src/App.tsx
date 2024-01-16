@@ -56,7 +56,7 @@ function App() {
         },
         // 节点默认样式
         style: {
-          fill: "#c6ec70",
+          fill: "#77A8BC",
           stroke: null,
         },
       },

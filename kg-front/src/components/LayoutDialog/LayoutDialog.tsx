@@ -22,6 +22,8 @@ import {
 } from "@mui/material";
 import { NumberInput } from "../NumberInput";
 import Radial from "./Radial";
+import Force from "./Force";
+import Dagre from "./Dagre";
 
 interface ChildProps {
   open: any;
@@ -70,10 +72,20 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
   const [maxIter, setMaxIter] = useState(1000); //停止迭代到最大迭代数
   const [focusNode, setFocusNode] = useState("node11"); //辐射的中心点
   const [unitRadius, setUnitRadius] = useState(100); //每一圈距离上一圈的距离
-  const [sort, setSort] = useState('undefined'); //同层节点布局后相距远近的依据
+  const [sort, setSort] = useState("undefined"); //同层节点布局后相距远近的依据
   const [prevOverlap, setPrevOverlap] = useState(true); //是否防止重叠
   const [strict, setStrict] = useState(false); //是否必须是严格的 radial 布局，及每一层的节点严格布局在一个环上
   const [worker, setWorker] = useState(true); //是否启用 web-worker 以防布局计算时间过长阻塞页面交互
+  //层次布局的参数
+  const [begin, setBegin] = useState({
+    from: window.innerWidth* 0.15,
+    to: window.innerHeight / 2 - window.innerHeight*0.15,
+  });
+  const [rank, setRank] = useState("LR"); // 布局的方向。T：top（上）；B：bottom（下）；L：left（左）；R：right（右）。
+  const [align, setAlign] = useState("DL"); // 节点对齐方式。U：upper（上）；D：down（下）；L：left（左）；R：right（右）
+  const [nodesep, setNodeSep] = useState(50); // 节点间距（px）。在rankdir 为 'TB' 或 'BT' 时是节点的水平间距；在rankdir 为 'LR' 或 'RL' 时代表节点的竖直方向间距
+  const [ranksep, setRankSep] = useState(50); // 层间距（px）。在rankdir 为 'TB' 或 'BT' 时是竖直方向相邻层间距；在rankdir 为 'LR' 或 'RL' 时代表水平方向相邻层间距
+  const [ctrPoints, setCtrPoints] = useState(true); //是否保留布局连线的控制点
   const handleSet = async () => {
     if (type === "circular") {
       dispatch(
@@ -94,6 +106,42 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
           center: [centerNumber.from, centerNumber.to],
         })
       );
+    } else if (type === "radial") {
+      dispatch(
+        setLayoutInfo({
+          type: type,
+          center: [centerNumber.from, centerNumber.to],
+          linkDistance: linkDis,
+          maxIteration: maxIter,
+          focusNode: focusNode,
+          unitRadius: unitRadius,
+          preventOverlap: prevOverlap,
+          sortBy: sort,
+          nodeSize: 70,
+          strictRadial: strict,
+          workerEnabled: worker,
+        })
+      );
+    } else if (type === "force") {
+      dispatch(
+        setLayoutInfo({
+          type: type,
+          center: [centerNumber.from, centerNumber.to],
+          linkDistance: linkDis,
+        })
+      );
+    }else if(type === "dagre") {
+      dispatch(
+        setLayoutInfo({
+          type: type,
+          begin: [begin.from, begin.to],
+          rankdir: rank,
+          align: align,
+          nodesep: nodesep,
+          ranksep: ranksep,
+          controlPoints: ctrPoints,
+        })
+      )
     }
     setOpen(false);
     setParam(false);
@@ -350,7 +398,7 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
                 unitRadius={unitRadius}
                 setUnitRadius={setUnitRadius}
                 sort={sort}
-                setSort = {setSort}
+                setSort={setSort}
                 prevOverlap={prevOverlap}
                 setPrevOverlap={setPrevOverlap}
                 strict={strict}
@@ -358,6 +406,28 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
                 worker={worker}
                 setWorker={setWorker}
               ></Radial>
+            ) : type === "force" ? (
+              <Force
+                centerNumber={centerNumber}
+                setCenterNumber={setCenterNumber}
+                linkDis={linkDis}
+                setLinkDis={setLinkDis}
+              ></Force>
+            ) : type === "dagre" ? (
+              <Dagre
+                centerNumber={begin}
+                setCenterNumber={setBegin}
+                rank={rank}
+                setRank={setRank}
+                align={align}
+                setAlign={setAlign}
+                nodesep={nodesep}
+                setNodeSep={setNodeSep}
+                ranksep={ranksep}
+                setRankSep={setRankSep}
+                ctrPoints={ctrPoints}
+                setCtrPoints={setCtrPoints}
+              ></Dagre>
             ) : (
               <></>
             )}

@@ -48,6 +48,7 @@ export default function Radial({
       spacing={2}
       sx={{ fontSize: 17, color: "#434D5B" }}
     >
+      {/* center */}
       <Grid item>
         <Grid container direction="row" spacing={2} alignItems="center">
           <Grid item>Center: [</Grid>
@@ -130,7 +131,7 @@ export default function Radial({
               >
                 <MenuItem
                   value={"node11"}
-                  onClick={() => {setFocusNode("node11")}}
+                  onClick={() => { setFocusNode("node11") }}
                 >
                   node1
                 </MenuItem>
@@ -140,7 +141,7 @@ export default function Radial({
         </Grid>
       </Grid>
       <Grid item>
-        <Grid container direction="row" spacing={4} alignItems="center">
+        <Grid container direction="row" spacing={3} alignItems="center">
           <Grid item>Sort: </Grid>
           <Grid item>
             <FormControl variant="standard" sx={{ m: 1, minWidth: 90 }}>
@@ -151,32 +152,69 @@ export default function Radial({
               >
                 <MenuItem
                   value={"undefined"}
-                  onClick={() => {setFocusNode("undefined")}}
+                  onClick={() => { setSort("undefined") }}
                 >
                   最短路径
                 </MenuItem>
                 <MenuItem
                   value={"data"}
-                  onClick={() => {setFocusNode("data")}}
+                  onClick={() => { setSort("data") }}
                 >
                   数据
                 </MenuItem>
               </Select>
             </FormControl>
-            <Grid item>PreventOverLap: </Grid>
-            <Grid item>
-                      False
-                      <Switch
-                        checked={prevOverlap}
-                        onChange={(
-                          event: React.ChangeEvent<HTMLInputElement>
-                        ) => {
-                          setPrevOverlap(event.target.checked);
-                        }}
-                        inputProps={{ "aria-label": "controlled" }}
-                      />
-                      True
-                    </Grid>
+
+          </Grid>
+          <Grid item>PreventOverLap: </Grid>
+          <Grid item>
+            False
+            <Switch
+              checked={prevOverlap}
+              onChange={(
+                event: React.ChangeEvent<HTMLInputElement>
+              ) => {
+                setPrevOverlap(event.target.checked);
+              }}
+              inputProps={{ "aria-label": "controlled" }}
+            />
+            True
+          </Grid>
+        </Grid>
+      </Grid>
+      <Grid item>
+        <Grid container direction="row" spacing={3} alignItems="center">
+          <Grid item>StrictRadial: </Grid>
+          <Grid item>
+            False
+            <Switch
+              checked={strict}
+              onChange={(
+                event: React.ChangeEvent<HTMLInputElement>
+              ) => {
+                setStrict(event.target.checked);
+              }}
+              inputProps={{ "aria-label": "controlled" }}
+            />
+            True
+          </Grid>
+        </Grid>
+      </Grid>
+      <Grid item>
+        <Grid container direction="row" spacing={3} alignItems="center">
+          <Grid item>Worker-Enabled: </Grid>
+          <Grid item>
+            False
+            <Switch
+              checked={worker}
+              onChange={(
+                event: React.ChangeEvent<HTMLInputElement>
+              ) => {
+                setWorker(event.target.checked);
+              }}
+              inputProps={{ "aria-label": "controlled" }}
+            />
+            True
           </Grid>
         </Grid>
       </Grid>
