@@ -38,7 +38,7 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
       label: "随机布局",
     },
     {
-      value: "force",
+      value: "gForce",
       label: "力导向布局",
     },
     {
@@ -68,9 +68,9 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
   const [order, setOrder] = useState("degree");
   const [angle, setAngle] = useState(1);
   //辐射布局的参数
-  const [linkDis, setLinkDis] = useState(200); //边长度
+  const [linkDis, setLinkDis] = useState(300); //边长度
   const [maxIter, setMaxIter] = useState(1000); //停止迭代到最大迭代数
-  const [focusNode, setFocusNode] = useState("node11"); //辐射的中心点
+  const [focusNode, setFocusNode] = useState(null); //辐射的中心点
   const [unitRadius, setUnitRadius] = useState(100); //每一圈距离上一圈的距离
   const [sort, setSort] = useState("undefined"); //同层节点布局后相距远近的依据
   const [prevOverlap, setPrevOverlap] = useState(true); //是否防止重叠
@@ -86,6 +86,13 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
   const [nodesep, setNodeSep] = useState(50); // 节点间距（px）。在rankdir 为 'TB' 或 'BT' 时是节点的水平间距；在rankdir 为 'LR' 或 'RL' 时代表节点的竖直方向间距
   const [ranksep, setRankSep] = useState(50); // 层间距（px）。在rankdir 为 'TB' 或 'BT' 时是竖直方向相邻层间距；在rankdir 为 'LR' 或 'RL' 时代表水平方向相邻层间距
   const [ctrPoints, setCtrPoints] = useState(true); //是否保留布局连线的控制点
+  //力导向布局节点间力的设置
+  const nodeStrength =  (d: any) => {
+    if (d.isLeaf) {
+      return -150;
+    }
+    return 10;
+  };
   const handleSet = async () => {
     if (type === "circular") {
       dispatch(
@@ -122,12 +129,14 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
           workerEnabled: worker,
         })
       );
-    } else if (type === "force") {
+    } else if (type === "gForce") {
       dispatch(
         setLayoutInfo({
           type: type,
           center: [centerNumber.from, centerNumber.to],
           linkDistance: linkDis,
+          nodeSize: 70,
+          prevOverlap:true,
         })
       );
     }else if(type === "dagre") {
@@ -406,7 +415,7 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
                 worker={worker}
                 setWorker={setWorker}
               ></Radial>
-            ) : type === "force" ? (
+            ) : type === "gForce" ? (
               <Force
                 centerNumber={centerNumber}
                 setCenterNumber={setCenterNumber}

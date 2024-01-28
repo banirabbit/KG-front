@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ant-design/icons": "^5.2.6",
     "@antv/g6": "^4.8.24",
+    "@antv/g6-react-node": "^1.4.8",
     "@antv/layout": "^0.3.25",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
@@ -52,6 +54,9 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@svgr/webpack": "^8.1.0",
+    "install": "^0.13.0",
+    "npm": "^10.4.0"
   }
 }

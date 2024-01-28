@@ -48,7 +48,7 @@ export default function ControlledOpenSpeedDial() {
           }
           )}
         </SpeedDial>
-        <LayoutDialog open={layoutOpen} setOpen={setLayoutOpen}></LayoutDialog>
+        
       </Box>
     );
   }

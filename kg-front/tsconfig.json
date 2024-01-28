@@ -23,5 +23,5 @@
   },
   "include": [
     "src"
-  ]
+, "src/icons/svg.d.ts"  ]
 }

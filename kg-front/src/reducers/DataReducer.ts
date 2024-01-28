@@ -1,23 +1,18 @@
 import * as actions from "../actions/dataAction";
 
 const initState = {
-  node: [],
-  edge: [],
+  data: {}
 };
 
 export default function DataReducer(state = initState, action: any) {
   const { type, data } = action;
   switch (type) {
-    case actions.GET_NODE:
+    case actions.GET_GRAPHDATA:
       return {
         ...state,
-        node: data,
+        data: data,
       };
-    case actions.GET_EDGE:
-      return {
-        ...state,
-        edge: data,
-      };
+    
     default:
       return state;
   }
