@@ -13,12 +13,23 @@
     "@heroicons/react": "^2.1.1",
     "@mui/icons-material": "^5.15.2",
     "@mui/material": "^5.15.2",
+    "@node-rs/jieba": "^1.9.2",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.16",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
     "@types/redux-thunk": "^2.1.0",
+    "axios": "^1.6.7",
+    "cores": "^0.8.5",
+    "cors": "^2.8.5",
+    "mysql": "^2.18.1",
     "neo4j-driver": "^5.15.0",
+    "node-gyp": "^10.0.1",
     "react": "^18.2.0",
+    "react-bmapgl": "^0.2.26",
     "react-dom": "^18.2.0",
     "react-redux": "^7.2.6",
     "react-scripts": "5.0.1",
@@ -33,7 +44,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "start-server": "node server/index.js"
   },
   "eslintConfig": {
     "extends": [
@@ -56,6 +68,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@svgr/webpack": "^8.1.0",
+    "@types/bmapgl": "^0.0.7",
     "install": "^0.13.0",
     "npm": "^10.4.0"
   }

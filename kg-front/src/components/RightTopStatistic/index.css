@@ -1,0 +1,17 @@
+.RightTop {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 99;
+}
+ul {
+    margin: 10px;
+}
+li div:first-child {
+    color: #ffffffc0;
+    font-size: 16px;
+}
+li div{
+    color: #ffffff3c;
+    font-size: 14px;
+}

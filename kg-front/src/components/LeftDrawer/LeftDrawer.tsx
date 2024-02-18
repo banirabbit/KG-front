@@ -1,9 +1,10 @@
 import React, { useState, FC } from "react";
 import "./LeftDrawer.css";
 import { createFromIconfontCN } from "@ant-design/icons";
-import General from "./General";
+import General from "./General/General";
+import Info from "./Info/Info";
 const SideArrow = createFromIconfontCN({
-  scriptUrl: "//at.alicdn.com/t/c/font_4425519_u66w2iw5mp.js",
+  scriptUrl: "//at.alicdn.com/t/c/font_4425519_6zqord7489w.js",
 });
 
 export default function LeftDrawer() {
@@ -22,16 +23,35 @@ export default function LeftDrawer() {
     <div className="leftdrawerContainer">
       <div className={`drawer ${sidebarOpen ? "" : "closed"}`}>
         <div className="content-buttons">
-          <button style={{backgroundColor:"#FC8F9B",}}>import</button>
-          <button onClick={() => changeContent("Content 1")} style={{backgroundColor:"#4B81BF",}}>general</button>
-          <button onClick={() => changeContent("Content 2")} style={{backgroundColor:"#FF6900",}}>info</button>
-          <button onClick={() => changeContent("Content 3")} style={{backgroundColor:"#00C756",}}>layout</button>
+          <button style={{ color: "#fff" }}>
+            <svg className="mainicon" aria-hidden="true">
+              <use xlinkHref="#icon-business-icon-sales-center"></use>
+            </svg>
+          </button>
+          <button
+            onClick={() => changeContent("Content 1")}
+            className="iconfont"
+          >
+            general
+          </button>
+          <button
+            onClick={() => changeContent("Content 2")}
+            className="iconfont"
+          >
+            info
+          </button>
+          <button
+            onClick={() => changeContent("Content 3")}
+            className="iconfont"
+          >
+            layout
+          </button>
         </div>
         {selectedContent === "Content 1" ? (
           <General></General>
-        ) : (
-          <div>content any</div>
-        )}
+        ) : selectedContent === "Content 2" ? (
+          <Info></Info>
+        ):(<></>)}
       </div>
       <button onClick={toggleSidebar} className="togglebutton">
         {sidebarOpen ? (

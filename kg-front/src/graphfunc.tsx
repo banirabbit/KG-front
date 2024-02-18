@@ -1,37 +1,53 @@
 import G6 from "@antv/g6";
 import companysvg from "./icons/company.svg";
-import documentsvg from "./icons/document.svg"
-import peoplesvg from "./icons/user.svg"
-import acceptsvg from "./icons/accept.svg"
-import atom from "./icons/atom.svg"
+import documentsvg from "./icons/document.svg";
+import peoplesvg from "./icons/user.svg";
+import acceptsvg from "./icons/accept.svg";
+import atom from "./icons/atom.svg";
+import { Opacity, Visibility } from "@mui/icons-material";
+import { AppendNode, setSelectedNode } from "./actions/dataAction";
 const { uniqueId } = G6.Util;
-export const clearFocusItemState:(arg0: any)=>void = (graph:any) => {
+let selectedNodes = 0;
+export const descendCompare = (p: string) => {
+  // 这是比较函数
+  return function (m: any, n: any) {
+    const a = m[p];
+    const b = n[p];
+    return b - a; // 降序
+  };
+};
+export const clearFocusItemState: (arg0: any) => void = (graph: any) => {
   if (!graph) return;
   clearFocusNodeState(graph);
   clearFocusEdgeState(graph);
 };
 // 清除图上所有节点的 focus 状态及相应样式
-export const clearFocusNodeState:(arg0: any)=>void = (graph:any) => {
-  const focusNodes = graph.findAllByState('node', 'focus');
-  focusNodes.forEach((fnode:any) => {
-    graph.setItemState(fnode, 'focus', false); // false
+export const clearFocusNodeState: (arg0: any) => void = (graph: any) => {
+  const focusNodes = graph.findAllByState("node", "focus");
+  focusNodes.forEach((fnode: any) => {
+    graph.setItemState(fnode, "focus", false); // false
   });
 };
 
 // 清除图上所有边的 focus 状态及相应样式
-export const clearFocusEdgeState:(arg0: any)=>void = (graph:any) => {
-  const focusEdges = graph.findAllByState('edge', 'focus');
-  focusEdges.forEach((fedge:any) => {
-    graph.setItemState(fedge, 'focus', false);
+export const clearFocusEdgeState: (arg0: any) => void = (graph: any) => {
+  const focusEdges = graph.findAllByState("edge", "focus");
+  focusEdges.forEach((fedge: any) => {
+    graph.setItemState(fedge, "focus", false);
   });
 };
-export const bindListener = (
+
+//监听鼠标操作
+export function bindListener(
   graph: any,
   shiftKeydown: Boolean,
-  stopLayout: Function,
-  clearFocusEdgeState: (arg0: any)=>void,
-  clearFocusItemState: (arg0: any)=>void
-) => {
+  layout: any,
+  clearFocusEdgeState: (arg0: any) => void,
+  clearFocusItemState: (arg0: any) => void,
+  dispatch: Function,
+) {
+  const nodes = graph.getNodes();
+  const edges = graph.getEdges();
   graph.on("keydown", (evt: any) => {
     const code = evt.key;
     if (!code) {
@@ -74,7 +90,6 @@ export const bindListener = (
     });
     model.oriLabel = currentLabel;
     graph.setItemState(item, "hover", false);
-
   });
 
   graph.on("edge:mouseenter", (evt: any) => {
@@ -101,26 +116,51 @@ export const bindListener = (
   });
   // click node to show the detail drawer
   graph.on("node:click", (evt: any) => {
-    stopLayout();
-    if (!shiftKeydown) clearFocusItemState(graph);
-    else clearFocusEdgeState(graph);
+    if (layout.instance !== undefined) {
+      layout.instance.stop();
+    }
+    console.log(selectedNodes)
+    if (!shiftKeydown) {
+      clearFocusItemState(graph);
+      selectedNodes = 1;
+      dispatch(setSelectedNode(selectedNodes));
+    } else {clearFocusEdgeState(graph);
+      selectedNodes++;
+      dispatch(setSelectedNode(selectedNodes));
+    }
     const { item } = evt;
 
+    //降低所有未选中节点透明度
+    nodes.forEach((node: Array<Object>) => {
+      graph.setItemState(node, "opacity", true);
+    });
     // highlight the clicked node, it is down by click-select
     graph.setItemState(item, "focus", true);
-
-    if (!shiftKeydown) {
-      // 将相关边也高亮
-      const relatedEdges = item.getEdges();
-      relatedEdges.forEach((edge: Array<Object>) => {
-        graph.setItemState(edge, "focus", true);
-      });
-    }
+    
+    // if (!shiftKeydown) {
+    //   // 将相关边也高亮
+    //   const relatedEdges = item.getEdges();
+    //   relatedEdges.forEach((edge: Array<Object>) => {
+    //     graph.setItemState(edge, "focus", true);
+    //   });
+    // }
   });
-
+  graph.on("node:dblclick", (evt: any) => {
+    const { item } = evt;
+    const cfg = item._cfg;
+    clearFocusItemState(graph);
+    selectedNodes = 0;
+    dispatch(setSelectedNode(0));
+    nodes.forEach((node: Array<object>) =>
+      graph.setItemState(node, "opacity", false)
+    );
+    AppendNode(cfg.id)(dispatch);
+  });
   // click edge to show the detail of integrated edge drawer
   graph.on("edge:click", (evt: any) => {
-    stopLayout();
+    if (layout.instance !== undefined) {
+      layout.instance.stop();
+    }
     if (!shiftKeydown) clearFocusItemState(graph);
     const { item } = evt;
     // highlight the clicked edge
@@ -130,13 +170,18 @@ export const bindListener = (
   // click canvas to cancel all the focus state
   graph.on("canvas:click", (evt: any) => {
     clearFocusItemState(graph);
+    selectedNodes = 0;
+    dispatch(setSelectedNode(0));
+    nodes.forEach((node: Array<object>) =>
+      graph.setItemState(node, "opacity", false)
+    );
     console.log(
       graph.getGroup(),
       graph.getGroup().getBBox(),
       graph.getGroup().getCanvasBBox()
     );
   });
-};
+}
 // 截断长文本。length 为文本截断后长度，elipsis 是后缀
 export const formatText = (text: string, length = 5, elipsis = "...") => {
   if (!text) return "";
@@ -161,13 +206,19 @@ export const processNodesEdges = (
   edgeLabelVisible: boolean
 ) => {
   if (!nodes || nodes.length === 0) return {};
+  let isBigModel = false;
+  if (nodes.length >= 400) {
+    isBigModel = true;
+  }
   const currentNodeMap: any = {};
   let maxNodeCount = -Infinity;
   const paddingRatio = 0.3;
   const paddingLeft = paddingRatio * width;
   const paddingTop = paddingRatio * height;
+  //移除重复结点
+  const removeNodes: any[] = [];
   nodes.forEach((node) => {
-    node.type = "real-node";
+    node.type = isBigModel ? "bigModel-node" : "real-node";
     node.labelLineNum = undefined;
     node.oriLabel = node.name;
     node.label = formatText(node.name, 5, "...");
@@ -177,28 +228,28 @@ export const processNodesEdges = (
     node.style = {};
     switch (node.group) {
       case "企业":
-        node.style.fill = "#DD585A";
+        node.style.fill = "#C05F9A";
         node.img = companysvg;
         break;
       case "专利":
-        node.style.fill = "#7AB7B2";
+        node.style.fill = "#8C5D98";
         node.img = acceptsvg;
         break;
       case "人":
-        node.style.fill = "#ED8F31";
+        node.style.fill = "#4E5D98";
         node.img = peoplesvg;
         break;
       case "招投标":
-        node.style.fill = "#5479A6";
-        node.img = documentsvg
+        node.style.fill = "#C05F7C";
+        node.img = documentsvg;
         break;
       default:
-        node.style.fill = "#FC9DA8";
+        node.style.fill = "#4E7998";
         node.img = atom;
     }
     if (currentNodeMap[node.id]) {
       console.warn("node exists already!", node.id);
-      node.id = `${node.id}${Math.random()}`;
+      removeNodes.push(node);
     }
     currentNodeMap[node.id] = node;
     // if (node.count > maxNodeCount) maxNodeCount = node.count;
@@ -255,27 +306,37 @@ export const processNodesEdges = (
     //    if (edge.count > maxCount) maxCount = edge.count;
     //    if (edge.count < minCount) minCount = edge.count;
   });
-
-  // nodes.sort(descendCompare(NODESIZEMAPPING));
-  const maxDegree = nodes[0].degree || 1;
+  let tempnodes = nodes;
+  tempnodes.sort(descendCompare("degree"));
+  const maxDegree = tempnodes[0].degree || 1;
 
   const descreteNodes: Array<any> = [];
   nodes.forEach((node, i) => {
     // assign the size mapping to the outDegree
     // const countRatio = node.count / maxNodeCount;
     const isRealNode = node.degree > 1 ? true : false;
-    node.size = isRealNode ? 60 : 40;
+    const maxSize = isBigModel ? 30 : 60;
+    const minSize = isBigModel ? 10 : 35;
+    node.size = (node.degree / maxDegree) * (maxSize - minSize) + minSize;
     node.isReal = isRealNode;
-    node.labelCfg = {
-      position: "bottom",
-      offset: 5,
-      style: {
-        fill: "#616161",
-        fontSize: 14,
-        //        stroke: global.node.labelCfg.style.stroke,
-        lineWidth: 3,
-      },
-    };
+    node.labelCfg = isBigModel
+      ? {
+          style: {
+            fontSize: 3,
+          },
+          position: "right",
+          offset: 1,
+        }
+      : {
+          position: "bottom",
+          offset: 5,
+          style: {
+            fill: "#616161",
+            fontSize: 14,
+            //        stroke: global.node.labelCfg.style.stroke,
+            lineWidth: 3,
+          },
+        };
 
     if (!node.degree) {
       descreteNodes.push(node);
@@ -283,9 +344,9 @@ export const processNodesEdges = (
   });
 
   //  const countRange = maxCount - minCount;
-  // const minEdgeSize = 1;
-  // const maxEdgeSize = 7;
-  // const edgeSizeRange = maxEdgeSize - minEdgeSize;
+  const minEdgeSize = 1;
+  const maxEdgeSize = 7;
+  const edgeSizeRange = maxEdgeSize - minEdgeSize;
   edges.forEach((edge) => {
     // set edges' style
     const targetNode = currentNodeMap[edge.target];
@@ -294,16 +355,17 @@ export const processNodesEdges = (
     //   ((edge.count - minCount) / countRange) * edgeSizeRange + minEdgeSize || 1;
     // edge.size = size;
 
-    // const arrowWidth = Math.max(size / 2 + 2, 3);
-    // const arrowLength = 10;
-    // const arrowBeging = targetNode.size + arrowLength;
-    // let arrowPath:string|undefined = `M ${arrowBeging},0 L ${
-    //   arrowBeging + arrowLength
-    // },-${arrowWidth} L ${arrowBeging + arrowLength},${arrowWidth} Z`;
-    // let d = targetNode.size / 2 + arrowLength;
+    //const arrowWidth = Math.max(size / 2 + 2, 3);
+    const arrowWidth = 3;
+    const arrowLength = 10;
+    const arrowBeging = targetNode.size + arrowLength;
+    let arrowPath: string | undefined = `M ${arrowBeging},0 L ${
+      arrowBeging + arrowLength
+    },-${arrowWidth} L ${arrowBeging + arrowLength},${arrowWidth} Z`;
+    let d = targetNode.size / 2 + arrowLength;
     if (edge.source === edge.target) {
       edge.type = "loop";
-      // arrowPath = undefined;
+      arrowPath = undefined;
     } else {
       edge.type = "cubic";
     }
@@ -334,21 +396,40 @@ export const processNodesEdges = (
     //       }
     //     : false,
     // };
-    edge.style = {
-      endArrow: true,
-      lineWidth: 2,
-    };
-    edge.labelCfg = {
-      autoRotate: true,
-      style: {
-        // stroke: global.edge.labelCfg.style.stroke,
-        fill: "#fff",
-        lineWidth: 4,
-        fontSize: 12,
-        lineAppendWidth: 10,
-        opacity: 1,
-      },
-    };
+    edge.style = isBigModel
+      ? {
+          type: "line",
+          lineWidth: 0.5,
+          cursor: "pointer",
+          opacity: 0.3,
+          stroke: "#949CC7",
+          size: 0.1,
+        }
+      : {
+          endArrow: {
+            path: arrowPath,
+            d,
+            fill: "#949CC7",
+            strokeOpacity: 0,
+            opacity: 0.5,
+          },
+          lineWidth: 2,
+          cursor: "pointer",
+          opacity: 0.3,
+          stroke: "#949CC7",
+        };
+    edge.labelCfg = isBigModel
+      ? { style: { opacity: 0 } }
+      : {
+          autoRotate: true,
+          style: {
+            fill: "#fff",
+            lineWidth: 4,
+            fontSize: 12,
+            lineAppendWidth: 5,
+            opacity: 1,
+          },
+        };
     if (!edge.oriLabel) edge.oriLabel = edge.label;
     if (largeGraphMode || !edgeLabelVisible) edge.label = "";
     else {
@@ -401,7 +482,7 @@ export const processNodesEdges = (
   //       descreteNodeCenter.y + 30 * Math.sin(Math.random() * Math.PI * 2);
   //   }
   // });
-
+  nodes = nodes.filter((item) => !removeNodes.includes(item));
   G6.Util.processParallelEdges(edges, 12.5, "custom-quadratic", "custom-line");
   return {
     maxDegree,

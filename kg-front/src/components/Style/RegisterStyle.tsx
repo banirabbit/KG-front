@@ -514,6 +514,7 @@ export default function RegisterEdgeStyle() {
             stroke: "#fff",
             strokeOpacity: 0.85,
             lineWidth: 1,
+            opacity: 1,
           },
           // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
           name: "stroke-shape",
@@ -615,17 +616,204 @@ export default function RegisterEdgeStyle() {
           const stroke = group.find(
             (e: any) => e.get("name") === "stroke-shape"
           );
+          const keyShape = item.getKeyShape();
+          const label = group.find((e: any) => e.get("name") === "text-shape");          
+          const colorSet = item.getModel().colorSet || colorSets[0];
+          if (value) {
+            halo && halo.show();
+            keyShape.attr("opacity", 1);
+            label && label.attr("fontWeight", 800);
+            label && label.attr("opacity", 1);
+          } else {
+            halo && halo.hide();
+            keyShape.attr("opacity", 0.3);
+            label && label.attr("fontWeight", 400);
+            label && label.attr("opacity", 0.3);
+          }
+        }else if(name === "opacity") {
+          const keyShape = item.getKeyShape();
           const label = group.find((e: any) => e.get("name") === "text-shape");
+          if(value) {
+            keyShape.attr("opacity", 0.3);
+            label && label.attr("opacity", 0.3);
+          } else {
+            keyShape.attr("opacity", 1);
+            label && label.attr("opacity", 1);
+          }
+        }
+      },
+      update: undefined,
+    },
+    "aggregated-node"
+  ); // 这样可以继承 aggregated-node 的 setState
+  
+   // 大规模下的节点样式
+   G6.registerNode(
+    "bigModel-node",
+    {
+      draw(cfg, group) {
+        let r = 0.5;
+        
+        if (isNumber(cfg.size)) {
+          r = cfg.size / 2;
+          
+        } else if (isArray(cfg.size)) {
+          r = cfg.size[0] / 2;
+        }
+        const style = cfg.style || {};
+        const colorSet = cfg.colorSet || colorSets[0];
+        const keyShape = group.addShape("circle", {
+          attrs: {
+            ...style,
+            x: 0,
+            y: 0,
+            r,
+            fill: style.fill || "#DD585A",
+            cursor: "pointer",
+            stroke: "#fff",
+            lineWidth: 0,
+            strokeOpacity: 0.6,
+          },
+          // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
+          name: "aggregated-node-keyShape",
+        });
+        // halo for hover
+        group.addShape("circle", {
+          attrs: {
+            x: 0,
+            y: 0,
+            r: r+2,
+            fill: backcolor,
+            fillOpacity: 0,
+            stroke: "#fff",
+            lineWidth: 1,
+          },
+          // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
+          name: "halo-shape",
+          visible: false,
+        });
+
+        // focus stroke for hover
+        group.addShape("circle", {
+          attrs: {
+            x: 0,
+            y: 0,
+            r,
+            fill: style.fill || colorSet.mainFill || "#2B384E",
+            stroke: "#fff",
+            strokeOpacity: 0.85,
+            lineWidth: 1,
+            opacity: 1,
+          },
+          // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
+          name: "stroke-shape",
+          visible: false,
+        });
+        let labelStyle = {};
+        if (cfg.labelCfg) {
+          labelStyle = Object.assign(labelStyle, cfg.labelCfg.style);
+        }
+
+        if (cfg.label) {
+          const text = cfg.label;
+          let labelStyle: any = {};
+          let refY = 0;
+          if (cfg.labelCfg) {
+            labelStyle = Object.assign(labelStyle, cfg.labelCfg.style);
+            refY += cfg.labelCfg.refY || 0;
+          }
+          let offsetY = 0;
+          const fontSize = labelStyle.fontSize < 8 ? 8 : labelStyle.fontSize;
+          const lineNum: Number | {} = cfg.labelLineNum || 1;
+          if (typeof lineNum === "number") {
+            offsetY = lineNum * (fontSize || 12);
+          }
+          group.addShape("text", {
+            attrs: {
+              text,
+              x: 0,
+              y: r + refY + offsetY + 5,
+              textAlign: "center",
+              textBaseLine: "alphabetic",
+              cursor: "pointer",
+              fontSize,
+              fill: style.fill || "#fff",
+              opacity: 0.85,
+              fontWeight: 400,
+            },
+            // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
+            name: "text-shape",
+            className: "text-shape",
+          });
+        }
+
+        // tag for new node
+        if (cfg.new) {
+          group.addShape("circle", {
+            attrs: {
+              x: r - 3,
+              y: -r + 3,
+              r: 4,
+              fill: "#6DD400",
+              lineWidth: 0.5,
+              stroke: "#FFFFFF",
+            },
+            // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
+            name: "typeNode-tag-circle",
+          });
+        }
+
+        return keyShape;
+      },
+      setState: (name, value, item: any) => {
+        const group = item.get("group");
+        const halo = group.find((e: any) => e.get("name") === "halo-shape");
+        if (name === "layoutEnd" && value) {
+          const labelShape = group.find(
+            (e: any) => e.get("name") === "text-shape"
+          );
+          if (labelShape) labelShape.set("visible", true);
+        } else if (name === "hover") {
+          if (item.hasState("focus")) {
+            return;
+          }
+          
           const keyShape = item.getKeyShape();
           const colorSet = item.getModel().colorSet || colorSets[0];
           if (value) {
             halo && halo.show();
-//            keyShape.attr("fill", colorSet.selectedFill);
-            label && label.attr("fontWeight", 800);
+//            keyShape.attr("fill", colorSet.activeFill);
           } else {
+            halo && halo.hide();
+//            keyShape.attr("fill", colorSet.mainFill);
+          }
+        } else if (name === "focus") {
+          const stroke = group.find(
+            (e: any) => e.get("name") === "stroke-shape"
+          );
+          const keyShape = item.getKeyShape();
+          const label = group.find((e: any) => e.get("name") === "text-shape");          
+          const colorSet = item.getModel().colorSet || colorSets[0];
+          if (value) {
             halo && halo.show();
-//            keyShape.attr("fill", colorSet.mainFill); // '#2B384E'
+            keyShape.attr("opacity", 1);
+            label && label.attr("fontWeight", 800);
+            label && label.attr("opacity", 1);
+          } else {
+            halo && halo.hide();
+            keyShape.attr("opacity", 0.3);
             label && label.attr("fontWeight", 400);
+            label && label.attr("opacity", 0.3);
+          }
+        }else if(name === "opacity") {
+          const keyShape = item.getKeyShape();
+          const label = group.find((e: any) => e.get("name") === "text-shape");
+          if(value) {
+            keyShape.attr("opacity", 0.3);
+            label && label.attr("opacity", 0.3);
+          } else {
+            keyShape.attr("opacity", 1);
+            label && label.attr("opacity", 1);
           }
         }
       },

@@ -1,0 +1,13 @@
+/* info.tsx */
+.infoCotainer {
+    display: flex;
+    flex-direction: column;
+    
+}
+.searchfield {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+}

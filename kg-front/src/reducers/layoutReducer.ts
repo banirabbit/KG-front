@@ -5,6 +5,7 @@ const initState = {
   layoutInfo: {
     
   },
+  
 };
 
 export default function LayoutReducer(state = initState, action: any) {

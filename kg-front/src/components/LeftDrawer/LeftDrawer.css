@@ -3,6 +3,7 @@
     height: 100%;
     display: flex;
     flex-direction: row;
+    z-index: 99;
 }
 
 .togglebutton {
@@ -15,7 +16,7 @@
     cursor: pointer;
 }
 .drawer {
-    width: 350px;
+    width: 330px;
     height: 100%;
     background-color: #222325;
     display: flex;
@@ -27,20 +28,31 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 10px;
     overflow: hidden;
 }
 .content-buttons button {
-    margin-right: 20px;
     border: none;
     border-radius: 2px;
-    color: #fff;
-    width: 50px;
+    background-color: rgba(255, 255, 255, 0);
+    color: rgba(255, 255, 255, 0.8);
+    width: 80px;
     height: 20px;
+    cursor: pointer;
 }
+.content-buttons button:hover {
+    color: rgba(255, 255, 255, 1);
+}
+.content-buttons button:first-child {
+    width: 40px;
+    height: 40px;
+    margin-right: 20px;
+}
+
 .drawer.closed {
     width: 0;
     overflow: hidden;
+    transition: width 0.3s ease;
 }
 .content ul{
     width: 100%;
@@ -59,7 +71,7 @@
     font-size: 14px;
     text-align: left;
     padding-left: 20px;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.8);
     border:none;
     background-color: rgb(0, 0, 0, 0);
     display: flex;
@@ -68,19 +80,13 @@
     align-items: center;
     cursor: pointer;
     overflow: hidden;
+    transition: 0.3s ease;
 }
 .content ul li div {
-    height: 20px;
     overflow: hidden;
 }
 .content button:hover {
     color: #fff;
-    background-color: rgba(255, 255, 255, 0.1);
 }
 
-.arrow {
-    margin-right: 20px;
-}
-.nodestyle {
-    
-}
+
