@@ -105,7 +105,7 @@ app.get("/maxNodeNumber", async (req, res) => {
   const cypher =
   "MATCH (n) RETURN COUNT(n) AS nodeCount";
   const result = await session.run(cypher);
-  res.json(result);
+  res.json(result.records[0].get("nodeCount"));
 })
 // 关闭Neo4j会话和驱动程序
 app.on("close", () => {
@@ -114,6 +114,12 @@ app.on("close", () => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+// 在 Express 应用程序关闭时关闭驱动程序
+server.on("close", () => {
+  // 关闭 Neo4j 会话和驱动程序
+  session.close();
+  driver.close();
 });

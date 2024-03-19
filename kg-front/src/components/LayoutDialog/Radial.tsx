@@ -130,10 +130,10 @@ export default function Radial({
                 label="FocusNode"
               >
                 <MenuItem
-                  value={"node11"}
+                  value={"26949"}
                   onClick={() => { setFocusNode("node11") }}
                 >
-                  node1
+                  26949
                 </MenuItem>
               </Select>
             </FormControl>

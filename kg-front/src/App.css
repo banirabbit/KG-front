@@ -2,8 +2,27 @@
   background-color: rgb(53, 59, 70);
   width: 100%;
   height: 100vh;
+  overflow: hidden;
+
 }
 .kgContainer {
   width: 100%;
   height: 100vh;
+}
+.ToolbarContainer {
+  position: absolute;
+  width: 300px;
+  top: 0;
+  left: 50%;
+  z-index: 99;
+  transform: translateX(-50%);
+}
+.MiniMapContainer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 99;
+  border: 2px solid #ffffff71;
+  margin: 10px;
+  background-color: rgb(53, 59, 70);
 }

@@ -5,9 +5,57 @@ import peoplesvg from "./icons/user.svg";
 import acceptsvg from "./icons/accept.svg";
 import atom from "./icons/atom.svg";
 import { Opacity, Visibility } from "@mui/icons-material";
-import { AppendNode, setSelectedNode } from "./actions/dataAction";
+import { AppendNode, setSelectInfo, setSelectedNode } from "./actions/dataAction";
+import { setfocusNode } from "./actions/layoutAction";
 const { uniqueId } = G6.Util;
 let selectedNodes = 0;
+const lightColors = [
+  '#8FE9FF',
+  '#87EAEF',
+  '#FFC9E3',
+  '#A7C2FF',
+  '#FFA1E3',
+  '#FFE269',
+  '#BFCFEE',
+  '#FFA0C5',
+  '#D5FF86',
+];
+const darkColors = [
+  '#7DA8FF',
+  '#44E6C1',
+  '#FF68A7',
+  '#7F86FF',
+  '#AE6CFF',
+  '#FF5A34',
+  '#5D7092',
+  '#FF6565',
+  '#6BFFDE',
+];
+const uLightColors = [
+  '#CFF6FF',
+  '#BCFCFF',
+  '#FFECF5',
+  '#ECFBFF',
+  '#EAD9FF',
+  '#FFF8DA',
+  '#DCE2EE',
+  '#FFE7F0',
+  '#EEFFCE',
+];
+const uDarkColors = [
+  '#CADBFF',
+  '#A9FFEB',
+  '#FFC4DD',
+  '#CACDFF',
+  '#FFD4F2',
+  '#FFD3C9',
+  '#EBF2FF',
+  '#FFCBCB',
+  '#CAFFF3',
+];
+const gColors:any[] = [];
+const unlightColorMap = new Map();
+
 export const descendCompare = (p: string) => {
   // 这是比较函数
   return function (m: any, n: any) {
@@ -16,6 +64,12 @@ export const descendCompare = (p: string) => {
     return b - a; // 降序
   };
 };
+const refreshDragedNodePosition = (e:any) =>{
+  
+  const model = e.item.get('model');
+  model.fx = e.x;
+  model.fy = e.y;
+}
 export const clearFocusItemState: (arg0: any) => void = (graph: any) => {
   if (!graph) return;
   clearFocusNodeState(graph);
@@ -77,7 +131,6 @@ export function bindListener(
       label: model.oriLabel,
     });
     model.oriLabel = currentLabel;
-    graph.setItemState(item, "hover", true);
     item.toFront();
   });
 
@@ -85,11 +138,10 @@ export function bindListener(
     const { item } = evt;
     const model = item.getModel();
     const currentLabel = model.label;
-    item.update({
-      label: model.oriLabel,
-    });
+     item.update({
+       label: model.oriLabel,
+     });
     model.oriLabel = currentLabel;
-    graph.setItemState(item, "hover", false);
   });
 
   graph.on("edge:mouseenter", (evt: any) => {
@@ -100,9 +152,9 @@ export function bindListener(
       label: model.oriLabel,
     });
     model.oriLabel = currentLabel;
-    item.toFront();
-    item.getSource().toFront();
-    item.getTarget().toFront();
+   item.toFront();
+     item.getSource().toFront();
+     item.getTarget().toFront();
   });
 
   graph.on("edge:mouseleave", (evt: any) => {
@@ -119,7 +171,6 @@ export function bindListener(
     if (layout.instance !== undefined) {
       layout.instance.stop();
     }
-    console.log(selectedNodes)
     if (!shiftKeydown) {
       clearFocusItemState(graph);
       selectedNodes = 1;
@@ -129,7 +180,10 @@ export function bindListener(
       dispatch(setSelectedNode(selectedNodes));
     }
     const { item } = evt;
-
+    console.log(item._cfg)
+    if(item._cfg.model !== undefined) {
+      dispatch(setSelectInfo(item._cfg.model));
+    }
     //降低所有未选中节点透明度
     nodes.forEach((node: Array<Object>) => {
       graph.setItemState(node, "opacity", true);
@@ -154,7 +208,11 @@ export function bindListener(
     nodes.forEach((node: Array<object>) =>
       graph.setItemState(node, "opacity", false)
     );
+    
+    
+    dispatch(setfocusNode(cfg.id));
     AppendNode(cfg.id)(dispatch);
+    
   });
   // click edge to show the detail of integrated edge drawer
   graph.on("edge:click", (evt: any) => {
@@ -181,6 +239,21 @@ export function bindListener(
       graph.getGroup().getCanvasBBox()
     );
   });
+  graph.on('node:dragstart', (e:any) => {
+    
+    refreshDragedNodePosition(e);
+  });
+  graph.on('node:drag', (e:any) => {
+    console.log("drag");
+    refreshDragedNodePosition(e);
+    console.log(e)
+  });
+  graph.on('node:dragend', (e:any) => {
+
+    e.item.get('model').fx = null;
+    e.item.get('model').fy = null;
+    
+  });
 }
 // 截断长文本。length 为文本截断后长度，elipsis 是后缀
 export const formatText = (text: string, length = 5, elipsis = "...") => {
@@ -203,13 +276,10 @@ export const processNodesEdges = (
   width: number,
   height: number,
   largeGraphMode: boolean,
-  edgeLabelVisible: boolean
+  edgeLabelVisible: boolean,
+  isBigModel:boolean,
 ) => {
   if (!nodes || nodes.length === 0) return {};
-  let isBigModel = false;
-  if (nodes.length >= 400) {
-    isBigModel = true;
-  }
   const currentNodeMap: any = {};
   let maxNodeCount = -Infinity;
   const paddingRatio = 0.3;
@@ -217,6 +287,11 @@ export const processNodesEdges = (
   const paddingTop = paddingRatio * height;
   //移除重复结点
   const removeNodes: any[] = [];
+  //颜色设置
+  lightColors.forEach((lcolor, i) => {
+    gColors.push('l(0) 0:' + lcolor + ' 1:' + darkColors[i]);
+    unlightColorMap.set(gColors[i], 'l(0) 0:' + uLightColors[i] + ' 1:' + uDarkColors[i]);
+    });
   nodes.forEach((node) => {
     node.type = isBigModel ? "bigModel-node" : "real-node";
     node.labelLineNum = undefined;
@@ -228,23 +303,23 @@ export const processNodesEdges = (
     node.style = {};
     switch (node.group) {
       case "企业":
-        node.style.fill = "#C05F9A";
+        node.style.fill = gColors[1];//"#5479A6";
         node.img = companysvg;
         break;
       case "专利":
-        node.style.fill = "#8C5D98";
+        node.style.fill = gColors[0];// "#ED8F31";
         node.img = acceptsvg;
         break;
       case "人":
-        node.style.fill = "#4E5D98";
+        node.style.fill = gColors[4];//"#7AB7B2";
         node.img = peoplesvg;
         break;
       case "招投标":
-        node.style.fill = "#C05F7C";
+        node.style.fill = gColors[3];;
         node.img = documentsvg;
         break;
       default:
-        node.style.fill = "#4E7998";
+        node.style.fill = gColors[5];;
         node.img = atom;
     }
     if (currentNodeMap[node.id]) {
@@ -306,7 +381,8 @@ export const processNodesEdges = (
     //    if (edge.count > maxCount) maxCount = edge.count;
     //    if (edge.count < minCount) minCount = edge.count;
   });
-  let tempnodes = nodes;
+  let tempnodes:any[] = [];
+  nodes.forEach((item) => tempnodes.push(item));
   tempnodes.sort(descendCompare("degree"));
   const maxDegree = tempnodes[0].degree || 1;
 
@@ -398,25 +474,24 @@ export const processNodesEdges = (
     // };
     edge.style = isBigModel
       ? {
-          type: "line",
           lineWidth: 0.5,
           cursor: "pointer",
-          opacity: 0.3,
-          stroke: "#949CC7",
+          opacity: 0.8,
+          stroke: gColors[1],
           size: 0.1,
         }
       : {
           endArrow: {
             path: arrowPath,
             d,
-            fill: "#949CC7",
+            fill: gColors[1],
             strokeOpacity: 0,
-            opacity: 0.5,
+            opacity: 0.7,
           },
           lineWidth: 2,
           cursor: "pointer",
           opacity: 0.3,
-          stroke: "#949CC7",
+          stroke:  gColors[1],
         };
     edge.labelCfg = isBigModel
       ? { style: { opacity: 0 } }

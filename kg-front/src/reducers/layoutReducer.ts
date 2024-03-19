@@ -5,7 +5,8 @@ const initState = {
   layoutInfo: {
     
   },
-  
+  isBigModel: false,
+  focusNode: "",
 };
 
 export default function LayoutReducer(state = initState, action: any) {
@@ -15,6 +16,16 @@ export default function LayoutReducer(state = initState, action: any) {
         ...state,
         layoutInfo: action.data,
       };
+    case actions.SET_BIGMODEL:
+      return {
+        ...state,
+        isBigModel: action.data,
+      }
+    case actions.SET_FOCUS:
+      return {
+        ...state,
+        focusNode: action.data,
+      }
     default:
       return state;
   }

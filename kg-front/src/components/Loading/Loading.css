@@ -2,15 +2,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
     width: 100%;
     height: 100vh;
   }
-  
+  .square-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    margin-bottom: 30px;
+  }
   .square {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #3498db;
+    background-color: #87EAEF;
     margin-right: 20px;
     animation: loadingAnimation 1.5s infinite ease-in-out;
   }
@@ -20,12 +27,12 @@
   }
   
   .square2 {
-    background-color: #F8C1B8;
+    background-color: #FFC9E3;
     animation-delay: 0.6s;
   }
   
   .square3 {
-    background-color: #FFC72C;
+    background-color: #A7C2FF;
     animation-delay: 0.9s;
   }
   

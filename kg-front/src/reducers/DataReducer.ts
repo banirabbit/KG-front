@@ -9,6 +9,9 @@ const initState = {
   length: 0,
   relationships: 200,
   selectedNodes: 0,
+  selectedInfo:{},
+  loading: false,
+  total:0,
 };
 
 export default function DataReducer(state = initState, action: any) {
@@ -54,6 +57,21 @@ export default function DataReducer(state = initState, action: any) {
         ...state,
         selectedNodes: data,
       };
+    case actions.SET_SELECTINFO:
+      return {
+        ...state,
+        selectedInfo: data,
+      }
+    case actions.SET_LOADING:
+      return {
+        ...state,
+        loading: data,
+      }
+    case actions.GET_TOTALNUM:
+      return {
+        ...state,
+        total: data,
+      }
     default:
       return state;
   }

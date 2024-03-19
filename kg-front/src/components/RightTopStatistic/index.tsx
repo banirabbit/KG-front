@@ -2,12 +2,12 @@ import { useSelector } from "react-redux"
 import { AppState } from "../../store"
 import "./index.css"
 export default function RightTopStatistic() {
-    const {length, selectedNodes} = useSelector((state:AppState) => state.GraphData);
+    const {length, selectedNodes, total} = useSelector((state:AppState) => state.GraphData);
     return (
         <div className="RightTop">
             <ul>
                 <li>
-                    <div>{length === undefined ? 0 : length}</div>
+                    <div>{length === undefined ? 0 : length}:{total === undefined ? 0 : total}</div>
                     <div>Nodes</div>
                 </li>
                 <li>

@@ -10,6 +10,9 @@ export const SET_MAPMODEL = "SET_MAPMODEL";
 export const GET_LENGTH = "GET_LENGTH";
 export const SET_RELA = "SET_RELA";
 export const SET_SELECTNODE = "SET_SELECTNODE";
+export const SET_SELECTINFO = "SET_SELECTINFO";
+export const SET_LOADING = "SET_LOADING";
+export const GET_TOTALNUM = "GET_TOTALNUM";
 interface GraphData {
   m: any;
   n: any;
@@ -65,7 +68,7 @@ export async function executeNeo4jQueryNode(
 ) {
   try {
     const cypher = "MATCH (m)-[r]-(n) RETURN m, r, n LIMIT " + relationships;
-    const result = await session.run(cypher); // 替换为实际的 Cypher 查询
+    const result = await session.run(cypher);
     const data = result.records.map((record: { toObject: () => any }) =>
       record.toObject()
     );
@@ -84,8 +87,8 @@ export async function executeNeo4jQueryNode(
     G6.registerNode("People", createNodeFromReact(People));
     data.forEach((record: GraphData) => {
       // 提取节点
-      const node = handleNativeData(nodes, record.n);
-      const relatedNode = handleNativeData(nodes, record.m);
+      const node = handleNativeData(nodes, record.m);
+      const relatedNode = handleNativeData(nodes, record.n);
       //提取边id
       
       const edgeid = handleElementId(record.r);
@@ -126,6 +129,22 @@ export const fetchData = async () => {
     if (response.status === 200) {
       const data = response.data;
       console.log("origin data:", data);
+    } else {
+      console.error('Failed to fetch data:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error during fetch:', error);
+  }
+};
+//节点总数
+export const fetchTotalNumber = ()=> async (dispatch:Function) => { 
+  try {
+    const response = await axiosInstance.get('maxNodeNumber');
+    if (response.status === 200) {
+      dispatch({
+        type: GET_TOTALNUM,
+        data:response.data.low
+      })
     } else {
       console.error('Failed to fetch data:', response.statusText);
     }
@@ -179,7 +198,7 @@ export const AppendNode = (nodeId:string)=> async (dispatch:Function) => {
         if (existingEdgeIndex === -1) {
           edges.push({
             id: edgeid,
-            source: nodeId, // 假设节点有一个属性为 id
+            source: nodeId,// 假设节点有一个属性为 id
             target: node.id,
             label: record.r.type,
           });
@@ -283,6 +302,24 @@ export const setRelationships = (data: any) => async (dispatch: Function) => {
 export const setSelectedNode = (data: any) => async (dispatch: Function) => {
   dispatch({
     type: SET_SELECTNODE,
+    data: data,
+  })
+}
+export const setSelectInfo = (data: any) => async (dispatch: Function) => {
+  dispatch({
+    type: SET_SELECTINFO,
+    data: data,
+  })
+}
+export const clearSearchNodes = (data:any) => async (dispatch: Function) => {
+  dispatch({
+    type: GET_SEARCH,
+    data: data,
+  })
+}
+export const setLoading = (data:any) => async (dispatch: Function) => {
+  dispatch({
+    type: SET_LOADING,
     data: data,
   })
 }

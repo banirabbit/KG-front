@@ -4,14 +4,15 @@
     right: 0;
     z-index: 99;
 }
-ul {
+.RightTop ul {
     margin: 10px;
 }
-li div:first-child {
-    color: #ffffffc0;
+.RightTop li div:first-child {
+    color: #ffffffde;
     font-size: 16px;
+    font-weight: 600;
 }
-li div{
+.RightTop li div{
     color: #ffffff3c;
     font-size: 14px;
 }

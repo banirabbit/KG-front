@@ -169,25 +169,6 @@ export default function Dagre({
           </Grid>
         </Grid>
       </Grid>
-      {/* controlPoints */}
-      <Grid item>
-        <Grid container direction="row" spacing={3} alignItems="center">
-        <Grid item>ControlPoints: </Grid>
-          <Grid item>
-            False
-            <Switch
-              checked={ctrPoints}
-              onChange={(
-                event: React.ChangeEvent<HTMLInputElement>
-              ) => {
-                setCtrPoints(event.target.checked);
-              }}
-              inputProps={{ "aria-label": "controlled" }}
-            />
-            True
-          </Grid>
-        </Grid>
-      </Grid>
     </Grid>
   );
 }

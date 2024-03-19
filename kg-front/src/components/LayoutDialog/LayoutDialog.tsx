@@ -61,8 +61,9 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
     from: window.innerWidth / 2,
     to: window.innerHeight / 2,
   });
+  const focus = useSelector((state: AppState) => state.Layout.focusNode);
   //环形布局的参数
-  const [radius, setRadius] = useState(200);
+  const [radius, setRadius] = useState(400);
   const [check, setCheck] = useState(false);
   const [divisions, setDivisions] = useState(5);
   const [order, setOrder] = useState("degree");
@@ -70,24 +71,26 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
   //辐射布局的参数
   const [linkDis, setLinkDis] = useState(300); //边长度
   const [maxIter, setMaxIter] = useState(1000); //停止迭代到最大迭代数
-  const [focusNode, setFocusNode] = useState(null); //辐射的中心点
+  const [focusNode, setFocusNode] = useState("26949"); //辐射的中心点
   const [unitRadius, setUnitRadius] = useState(100); //每一圈距离上一圈的距离
   const [sort, setSort] = useState("undefined"); //同层节点布局后相距远近的依据
   const [prevOverlap, setPrevOverlap] = useState(true); //是否防止重叠
-  const [strict, setStrict] = useState(false); //是否必须是严格的 radial 布局，及每一层的节点严格布局在一个环上
+  const [strict, setStrict] = useState(true); //是否必须是严格的 radial 布局，及每一层的节点严格布局在一个环上
   const [worker, setWorker] = useState(true); //是否启用 web-worker 以防布局计算时间过长阻塞页面交互
   //层次布局的参数
   const [begin, setBegin] = useState({
-    from: window.innerWidth* 0.15,
-    to: window.innerHeight / 2 - window.innerHeight*0.15,
+    from: window.innerWidth * 0.15,
+    to: window.innerHeight / 2 - window.innerHeight * 0.15,
   });
   const [rank, setRank] = useState("LR"); // 布局的方向。T：top（上）；B：bottom（下）；L：left（左）；R：right（右）。
   const [align, setAlign] = useState("DL"); // 节点对齐方式。U：upper（上）；D：down（下）；L：left（左）；R：right（右）
   const [nodesep, setNodeSep] = useState(50); // 节点间距（px）。在rankdir 为 'TB' 或 'BT' 时是节点的水平间距；在rankdir 为 'LR' 或 'RL' 时代表节点的竖直方向间距
   const [ranksep, setRankSep] = useState(50); // 层间距（px）。在rankdir 为 'TB' 或 'BT' 时是竖直方向相邻层间距；在rankdir 为 'LR' 或 'RL' 时代表水平方向相邻层间距
   const [ctrPoints, setCtrPoints] = useState(true); //是否保留布局连线的控制点
+
+  const isBigModel = useSelector((state: AppState) => state.Layout.isBigModel);
   //力导向布局节点间力的设置
-  const nodeStrength =  (d: any) => {
+  const nodeStrength = (d: any) => {
     if (d.isLeaf) {
       return -150;
     }
@@ -120,7 +123,7 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
           center: [centerNumber.from, centerNumber.to],
           linkDistance: linkDis,
           maxIteration: maxIter,
-          focusNode: focusNode,
+          focusNode: focus === "" ? focusNode : focus,
           unitRadius: unitRadius,
           preventOverlap: prevOverlap,
           sortBy: sort,
@@ -130,27 +133,40 @@ export default function LayoutDialog({ open, setOpen }: Readonly<ChildProps>) {
         })
       );
     } else if (type === "gForce") {
+      if (isBigModel) {
+        dispatch(setLayoutInfo({ type: "force2", workerEnabled: true }));
+      } else {
+        dispatch(
+          setLayoutInfo({
+            type: "gForce",
+            minMovement: 0.01,
+            maxIteration: 5000,
+            preventOverlap: true,
+            damping: 0.99,
+            linkdistance: 400,
+          })
+        );
+      }
+    } else if (type === "dagre") {
       dispatch(
         setLayoutInfo({
           type: type,
-          center: [centerNumber.from, centerNumber.to],
-          linkDistance: linkDis,
-          nodeSize: 70,
-          prevOverlap:true,
+          // begin: [begin.from, begin.to],
+          // rankdir: rank,
+          // align: align,
+          // nodesep: nodesep,
+          // ranksep: ranksep,
+
+          nodesepFunc: (d: any) => {
+            if (d.id === "3") {
+              return 500;
+            }
+            return 50;
+          },
+          ranksep: 70,
+          controlPoints: true,
         })
       );
-    }else if(type === "dagre") {
-      dispatch(
-        setLayoutInfo({
-          type: type,
-          begin: [begin.from, begin.to],
-          rankdir: rank,
-          align: align,
-          nodesep: nodesep,
-          ranksep: ranksep,
-          controlPoints: ctrPoints,
-        })
-      )
     }
     setOpen(false);
     setParam(false);

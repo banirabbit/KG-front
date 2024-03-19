@@ -4,24 +4,38 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import "./Info.css";
 import InfoFilter from "./InfoFilter";
-import { useState } from "react";
-import { SearchNodeName } from "../../../actions/dataAction";
-import { useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
+import { SearchNodeName, setLoading } from "../../../actions/dataAction";
+import { useDispatch, useSelector } from "react-redux";
+import { AppState } from "../../../store";
+import DetailInfo from "./DetailInfo";
 export default function Info() {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState<string>("");
-  //TODO
-  const [loading, setLoading] = useState(false);
+  const loading = useSelector((state:AppState) => state.GraphData.loading)
   const dispatch = useDispatch();
   const handleSearch = () => {
-    setLoading(true);
+    // dispatch(setLoading(false));
     dispatch(SearchNodeName(inputValue));
-    setLoading(false);
   };
+  const selectedInfo = useSelector(
+    (state: AppState) => state.GraphData.selectedInfo
+  );
+  useEffect(() => {
+    console.log(selectedInfo);
+  }, [selectedInfo]);
   return (
     <div className="infoContainer">
-      <div className="statistic"></div>
-      <div className="detailInfo"> </div>
+      
+      <div className="detailInfo">
+      <div className="divider"></div>
+        {Object.keys(selectedInfo).length === 0 ? (
+          <div className="notice">Select a node to show information</div>
+        ) : (
+          <DetailInfo></DetailInfo>
+        )}
+      </div>
+
       <div className="searchfield">
         <IconButton
           sx={{ p: "10px 10px 0 10px", color: "#E0E3E7" }}

@@ -59,7 +59,7 @@ export default function SearchField({inputValue, setInputValue}:ChildProps) {
       }}
     >
       <ThemeProvider theme={customTheme(outerTheme)}>
-        <TextField label="Input Node/Edge Name" variant="standard" value={inputValue} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        <TextField label="Search" variant="standard" value={inputValue} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   }}/>
       </ThemeProvider>

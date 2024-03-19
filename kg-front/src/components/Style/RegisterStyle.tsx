@@ -64,45 +64,7 @@ export default function RegisterEdgeStyle() {
     disableColor
   );
   const backcolor = "#353B46";
-  const global = {
-    node: {
-      style: {
-        fill: "#2B384E",
-      },
-      labelCfg: {
-        style: {
-          fill: "#acaeaf",
-          stroke: "#191b1c",
-        },
-      },
-      stateStyles: {
-        focus: {
-          fill: "#2B384E",
-        },
-      },
-    },
-    edge: {
-      style: {
-        stroke: "#acaeaf",
-        realEdgeStroke: "#acaeaf", //'#f00',
-        realEdgeOpacity,
-        strokeOpacity: realEdgeOpacity,
-      },
-      labelCfg: {
-        style: {
-          fill: "#fff",
-          realEdgeStroke: "#acaeaf", //'#f00',
-          realEdgeOpacity: 0.5,
-          stroke: "#191b1c",
-        },
-      },
-      stateStyles: {
-        focus: {
-          stroke: "#fff", // '#3C9AE8',
-        },
-      },
-    },
-  };
+ 
   // Custom the quadratic edge for multiple edges between one node pair
   G6.registerEdge(
     "custom-quadratic",
@@ -493,11 +455,11 @@ export default function RegisterEdgeStyle() {
           attrs: {
             x: 0,
             y: 0,
-            r: r+2,
-            fill: backcolor,
+            r: r+8,
             fillOpacity: 0,
             stroke: "#fff",
-            lineWidth: 1,
+            lineWidth: 4,
+            cursor: "pointer",
           },
           // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
           name: "halo-shape",
@@ -522,16 +484,17 @@ export default function RegisterEdgeStyle() {
         });
 
         
-        let width = 2*r*0.7;
-        let height = 2*r*0.7;
+        let width = 2*r*0.5;
+        let height = 2*r*0.5;
         group.addShape("image", {
           attrs: {
             x: -width / 2,
             y: -height / 2,
-            width: 2*r * 0.7,
-            height: 2*r *0.7,
+            width: 2*r * 0.5,
+            height: 2*r *0.5,
             img: cfg.img,
             opacity: 0.5,
+            cursor: "pointer",
           }
         })
         let labelStyle = {};

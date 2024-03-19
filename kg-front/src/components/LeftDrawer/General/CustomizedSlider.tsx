@@ -4,7 +4,7 @@ import { styled } from "@mui/material/styles";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../../../store";
 import { useState } from "react";
-import { setRelationships } from "../../../actions/dataAction";
+import { setLoading, setRelationships } from "../../../actions/dataAction";
 
 const PrettoSlider = styled(Slider)({
   color: "#D1A9B5",
@@ -49,15 +49,22 @@ export default function CustomizedSlider() {
   const rela = useSelector((state:AppState) => state.GraphData.relationships)
   const [value, setValue] = useState(rela);
   const dispatch = useDispatch();
-  let timer:any;
+  const [timer, setTimer] = useState<NodeJS.Timeout|null>(null); // 声明定时器的变量
   const handleChange = (event: Event, newValue: number | number[]) => {
     setValue(newValue as number)
+
+     // 清除旧的定时器
+  if (timer !== null) {
     clearTimeout(timer);
-    // 设置一个新的定时器，在用户停止滑动后0.5秒执行
-  timer = setTimeout(function() {
+  }
+  
+    // 设置一个新的定时器，在用户停止滑动后1秒执行
+  setTimer(setTimeout(function() {
+    console.log(newValue)
+    dispatch(setLoading(false));
     dispatch(setRelationships(value));
-    console.log(rela)
-  }, 3000);
+ 
+  }, 300));
   }
   return (
     <PrettoSlider
@@ -67,7 +74,7 @@ export default function CustomizedSlider() {
       value={value}
       onChange={handleChange}
       min={5}
-      max={1000}
+      max={8000}
     />
   );
 }

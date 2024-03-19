@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import './Loading.css'; // 导入样式文件
+import React, { useEffect } from "react";
+import "./Loading.css"; // 导入样式文件
 
 const Loading = () => {
   useEffect(() => {
@@ -10,10 +10,22 @@ const Loading = () => {
   }, []);
 
   return (
-    <div className="loading-container" >
-      <div className="square square1"></div>
-      <div className="square square2"></div>
-      <div className="square square3"></div>
+    <div className="loading-container">
+      <div className="square-container">
+        <div className="square square1"></div>
+        <div className="square square2"></div>
+        <div className="square square3"></div>
+      </div>
+      <div
+        style={{
+          color: "#FFECF5",
+          fontWeight: 600,
+          fontSize: "14px",
+          textAlign: "center",
+        }}
+      >
+        获取数据中...
+      </div>
     </div>
   );
 };
