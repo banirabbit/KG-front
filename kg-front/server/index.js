@@ -107,6 +107,12 @@ app.get("/maxNodeNumber", async (req, res) => {
   const result = await session.run(cypher);
   res.json(result.records[0].get("nodeCount"));
 })
+app.get("/assigneeName", async (req, res) => {
+  const cypher =
+  "MATCH (m:`专利`) RETURN m.assignee LIMIT 100";
+  const result = await session.run(cypher);
+  res.json(result);
+})
 // 关闭Neo4j会话和驱动程序
 app.on("close", () => {
   session.close();

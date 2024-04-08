@@ -13,6 +13,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Switch from "@mui/material/Switch";
 import AutoComplete from "./AutoComplete";
+
 import {
   Checkbox,
   Grid,
@@ -42,6 +43,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import EqualizerIcon from "@mui/icons-material/Equalizer";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
+import NumbersIcon from '@mui/icons-material/Numbers';
+import { orange } from "@mui/material/colors";
 interface ChildProps {
   open: any;
   setOpen: any;
@@ -53,6 +56,17 @@ interface DateStateType {
   five: boolean;
   three: boolean;
   one: boolean;
+}
+// Update the color options to include a new option
+declare module '@mui/icons-material/Numbers' {
+  interface NumbersIconPropsColorOverrides {
+    orange: true;
+  }
+}
+declare module '@mui/material/Slider' {
+  interface SliderPropsColorOverrides {
+    orange: true;
+  }
 }
 export default function InfoFilter({ open, setOpen }: ChildProps) {
   const [fullWidth, setFullWidth] = useState(true);
@@ -185,11 +199,17 @@ export default function InfoFilter({ open, setOpen }: ChildProps) {
     });
   };
   //类型autoComplete的参数
-  const [typeValue, setTypeValue] = React.useState<any[]>([]);
+  const [typeValue, setTypeValue] = useState<any[]>([]);
   const onTypeValueChange = (event: any, newValue: any, reason: any) => {
     setTypeValue(newValue);
     console.log("typevalue:", typeValue);
   };
+  //节点度数选择
+  const [degreeValue, setDegreeValue] = useState<number[]>([20, 37]);
+  const handleDegreeChange = (event: Event, newValue: number | number[]) => {
+    setDegreeValue(newValue as number[]);
+  };
+
   return (
     <React.Fragment>
       <Dialog
@@ -662,6 +682,32 @@ export default function InfoFilter({ open, setOpen }: ChildProps) {
                       type: "number",
                       "aria-labelledby": "input-slider",
                     }}
+                  />
+                </Grid>
+              </Grid>
+              {/* 节点度数 */}
+              <Grid container spacing={2} alignItems="center">
+                <Grid item>
+                  <NumbersIcon sx={{ color: orange[500] }}></NumbersIcon>
+                </Grid>
+                <Grid item>
+                  <Typography sx={{ width: "80px" }}>节点度数</Typography>
+                </Grid>
+                <Grid item>
+                  <HelpOutlineOutlinedIcon
+                    color="disabled"
+                    fontSize="small"
+                  ></HelpOutlineOutlinedIcon>
+                </Grid>
+                <Grid item xs>
+                  <Slider
+                    value={degreeValue}
+                    onChange={handleDegreeChange}
+                    min={10}
+                    max={8000}
+                    aria-labelledby="input-slider"
+                    valueLabelDisplay="auto"
+                    color="orange"
                   />
                 </Grid>
               </Grid>

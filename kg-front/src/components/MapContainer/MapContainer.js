@@ -8,6 +8,9 @@ import {
 import React, { useEffect } from "react";
 import { data } from "../../data";
 import { useSelector } from "react-redux";
+import possvg from "../../icons/pos.svg";
+import { useDispatch } from "react-redux";
+import { setSelectInfo } from "../../actions/dataAction";
 function MapContainer() {
   /* global BMapGL */
 
@@ -18,40 +21,8 @@ function MapContainer() {
   /* global initMap */
 
   /* global whiteStyle */
-  const citys = [
-    "北京",
-    "天津",
-    "上海",
-    "重庆",
-    "石家庄",
-    "太原",
-    "呼和浩特",
-    "哈尔滨",
-    "长春",
-    "沈阳",
-    "济南",
-    "南京",
-    "合肥",
-    "杭州",
-    "南昌",
-    "福州",
-    "郑州",
-    "武汉",
-    "长沙",
-    "广州",
-    "南宁",
-    "西安",
-    "银川",
-    "兰州",
-    "西宁",
-    "乌鲁木齐",
-    "成都",
-    "贵阳",
-    "昆明",
-    "拉萨",
-    "海口",
-  ];
   const data = useSelector((state) => state.GraphData.citys);
+  const dispatch = useDispatch();
   return (
     <Map
       style={{ position: "absolute", width: "100%", height: "100vh" }}
@@ -59,14 +30,20 @@ function MapContainer() {
       zoom={6}
       enableScrollWheelZoom={true}
     >
-      <MapvglView effects={["bright"]}>
+      <MapvglView>
         <MapvglLayer
-          type="PointLayer"
+          type="IconLayer"
           data={data}
           options={{
-            blend: "lighter",
-            size: 12,
-            color: "rgb(255, 53, 0, 0.6)",
+            icon: possvg,
+            enablePicked: true, // 是否可以拾取
+            selectedIndex: -1, // 选中项
+            selectedColor: "#ff0000", // 选中项颜色
+            autoSelect: true, // 根据鼠标位置来自动设置选中项
+            onClick: (e) => { // 点击事件
+              console.log(e);
+              dispatch(setSelectInfo(e.dataItem.properties))
+          },
           }}
         />
       </MapvglView>

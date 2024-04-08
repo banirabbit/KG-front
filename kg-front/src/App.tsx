@@ -86,13 +86,14 @@ function App() {
         setDBData({ nodes: processNodes, edges: processEdges });
         console.log(processEdges, processNodes);
         dispatch(setLoading(true));
+       // dispatch(getCitys());
       })
       .catch((error) => console.error("Error executing Neo4j query:", error))
       .finally(() => {
         // 确保在所有操作结束后关闭 driver
         driver.close();
       });   
-     // dispatch(getCitys());    
+          
   }, [relationships]);
   useEffect(() => {
     dispatch(fetchTotalNumber());
@@ -342,7 +343,7 @@ function App() {
           });
         }
         setGraphConfig(graph);
-        if (typeof window !== "undefined")
+        if (typeof window !== "undefined" && !isMapModel)
           window.onresize = () => {
             if (!graph || graph.get("destroyed")) return;
             if (!container || !container.scrollWidth || !container.scrollHeight)
