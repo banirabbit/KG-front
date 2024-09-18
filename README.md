@@ -8,7 +8,7 @@ npm run start启动项目
 建立自己的neo4j数据库，然后修改server/index.js中的配置信息 如需数据可加我微信
 ### 启动
 > cd server
-node index.js
+> node index.js
 
 # 使用说明
 - 双击节点可展开
