@@ -34,6 +34,12 @@ import InfoAlert from "./components/Alert/InfoAlert";
 import zIndex from "@mui/material/styles/zIndex";
 import { setBigModel } from "./actions/layoutAction";
 import WarnAlert from "./components/Alert/WarnAlert";
+import {
+  CosmographProvider,
+  Cosmograph,
+  CosmographRef,
+} from "@cosmograph/react";
+import { convertData } from "./converData";
 
 function App() {
   //neo4j服务器信息配置
@@ -48,6 +54,7 @@ function App() {
   const myRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const miniMapRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<HTMLDivElement>(null);
   let CANVAS_WIDTH: number;
   let CANVAS_HEIGHT: number;
   let shiftKeydown = false;
@@ -67,6 +74,8 @@ function App() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [warnalert, setWarnAlertOpen] = useState(false);
   const dispatch = useDispatch();
+  const [cosmdata, setCosmData] = useState<{ nodes: any[]; edges: any[] }>();
+  const cosmographRef = useRef<CosmographRef>(null);
   RegisterEdgeStyle();
   useEffect(() => {
     // 调用查询函数
@@ -74,7 +83,7 @@ function App() {
       .then((data) => {
         let isBig = data.nodes.length > 400 ? true : false;
         dispatch(setBigModel(isBig));
-        const { edges: processEdges, nodes: processNodes } = processNodesEdges(
+        const { edges, nodes } = processNodesEdges(
           data.nodes,
           data.edges,
           CANVAS_WIDTH,
@@ -83,22 +92,21 @@ function App() {
           true,
           isBig
         );
-        setDBData({ nodes: processNodes, edges: processEdges });
-        console.log(processEdges, processNodes);
+        setDBData({ nodes, edges });
+        console.log(convertData(nodes, edges));
+        setCosmData(convertData(nodes, edges));
         dispatch(setLoading(true));
-       // dispatch(getCitys());
+        // dispatch(getCitys());
       })
       .catch((error) => console.error("Error executing Neo4j query:", error))
       .finally(() => {
         // 确保在所有操作结束后关闭 driver
         driver.close();
-      });   
-          
+      });
   }, [relationships]);
   useEffect(() => {
     dispatch(fetchTotalNumber());
-    
-  }, [])
+  }, []);
   //展开节点
   useEffect(() => {
     if (appendData !== undefined && Object.keys(appendData).length > 0) {
@@ -198,7 +206,13 @@ function App() {
           "miniMapContainer not found. Make sure to set the containerRef."
         );
       }
-      if (!isMapModel) {
+      const viewMapContainer = viewRef.current;
+      if (viewMapContainer === null || viewMapContainer === undefined) {
+        throw new Error(
+          "viewMapContainer not found. Make sure to set the containerRef."
+        );
+      }
+      if ((!isMapModel && !isBigModel) || viewClick) {
         const miniMap = new G6.Minimap({ container: miniMapContainer });
         const grid = new G6.Grid();
         const toolbar = new G6.ToolBar({ container: toolbarContainer });
@@ -206,14 +220,14 @@ function App() {
         CANVAS_WIDTH = container.scrollWidth;
         CANVAS_HEIGHT = (container.scrollHeight || 500) - 30;
         const graph = new G6.Graph({
-          container,
+          container: viewClick ? viewMapContainer : container,
           linkCenter: true,
           minZoom: 0.1,
           modes: {
             default: ["drag-canvas", "zoom-canvas"],
           },
           animate: true,
-          plugins: [toolbar, miniMap, grid],
+          plugins: [toolbar],
         });
         graph.data(dbdata);
 
@@ -343,31 +357,129 @@ function App() {
           });
         }
         setGraphConfig(graph);
-        if (typeof window !== "undefined" && !isMapModel)
+        if (typeof window !== "undefined" && !isMapModel && !isBigModel) {
           window.onresize = () => {
             if (!graph || graph.get("destroyed")) return;
             if (!container || !container.scrollWidth || !container.scrollHeight)
               return;
             graph.changeSize(container.scrollWidth, container.scrollHeight);
           };
-
+        }
         return () => {
           // 销毁G6图形实例
           graph.destroy();
         };
+      } else if (isBigModel) {
       }
     }
   }, [layoutInfo, loading, dbdata, isMapModel]);
+  //判断当前屏幕中的节点数，查看细节
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  const [viewDetail, setViewDetail] = useState(false);
+  const [viewClick, setViewClick] = useState(false);
+  const [oriDBdata, setOriDBdata] = useState<{ nodes: any[]; edges: any[] }>(); //切换视图之前保存原始数据
+  if (typeof window !== "undefined") {
+    window.onwheel = () => {
+      console.log(1);
+      // 清除旧的定时器
+      if (timer !== null) {
+        clearTimeout(timer);
+      }
+
+      // 设置一个新的定时器，在用户停止滑动后1秒执行
+      setTimer(
+        setTimeout(function () {
+          let screenNodeMap =
+            cosmographRef.current?.getSampledNodePositionsMap();
+          if (screenNodeMap !== undefined && screenNodeMap?.size <= 200) {
+            setViewDetail(true);
+          } else if (screenNodeMap !== undefined && screenNodeMap?.size > 200) {
+            setViewDetail(false);
+          }
+        }, 300)
+      );
+    };
+  }
+  useEffect(() => {
+    if (viewClick) {
+      let screenNodeMap = cosmographRef.current?.getSampledNodePositionsMap();
+      let tempNodes = dbdata.nodes.filter(function (item: any) {
+        if (screenNodeMap?.has(item.id)) {
+          let temp: number[] | undefined = screenNodeMap.get(item.id);
+          if (temp !== undefined) {
+            item.x = temp[0];
+            item.y = temp[1];
+            return item;
+          }
+        }
+      });
+      let tempEdges = dbdata.edges.filter(function (item: any) {
+        if (
+          screenNodeMap?.has(item.source) &&
+          screenNodeMap?.has(item.target)
+        ) {
+          return item;
+        }
+      });
+      console.log(tempNodes, tempEdges);
+      const { edges, nodes } = processNodesEdges(
+        tempNodes,
+        tempEdges,
+        CANVAS_WIDTH,
+        CANVAS_HEIGHT,
+        false,
+        true,
+        false
+      );
+      setOriDBdata(dbdata);
+      setDBData({ nodes, edges });
+    }else if(oriDBdata !== undefined) {
+      setDBData(oriDBdata)
+    }
+  }, [viewClick]);
 
   return (
     <Grid container className="kgBackground">
       {loading ? <></> : <Loading></Loading>}
       {isMapModel ? <MapContainer></MapContainer> : <></>}
+      {isBigModel ? (
+        <CosmographProvider
+          nodes={cosmdata !== undefined ? cosmdata.nodes : []}
+          links={cosmdata !== undefined ? cosmdata.edges : []}
+        >
+          <Cosmograph
+            ref={cosmographRef}
+            nodeSize={(d: any) => d.size}
+            nodeLabelAccessor={(d: any) => d.label}
+            nodeColor={(d: any) => d.color}
+            simulationFriction={1}
+            simulationLinkSpring={0.1}
+            simulationLinkDistance={20}
+            simulationRepulsion={1}
+            simulationDecay={8000}
+            simulationGravity={0.05}
+            nodeLabelColor={"#D4D4D4"}
+            hoveredNodeLabelColor={"#FFDA4A"}
+            disableSimulation={false}
+            nodeSamplingDistance={1}
+            fitViewOnInit={true}
+            backgroundColor={"#363B46"}
+          />
+        </CosmographProvider>
+      ) : (
+        <></>
+      )}
       <div ref={myRef} className="kgContainer" id="container"></div>
       <LeftDrawer></LeftDrawer>
-      <RightTopStatistic></RightTopStatistic>
+      <RightTopStatistic
+        viewDetail={viewDetail}
+        viewClick={viewClick}
+        setViewClick={setViewClick}
+      ></RightTopStatistic>
       <div ref={toolbarRef} className="ToolbarContainer"></div>
       <div ref={miniMapRef} className="MiniMapContainer"></div>
+      {/* 大数据模式使用g6查看详细情况的容器 */}
+      <div className="viewContainer" ref={viewRef} style={{zIndex:viewClick ? 99 : -1}}></div> : <></>
       <InfoAlert
         text={"布局中，请稍侯..."}
         open={alertOpen}

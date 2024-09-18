@@ -9,12 +9,21 @@
   width: 100%;
   height: 100vh;
 }
+.viewContainer {
+  position: absolute;
+  top: 40%;
+  right: 5px;
+  width: 500px;
+  height: 500px;
+  z-index: 99;
+  background-color: rgb(53, 59, 70);
+  border: 2px solid #ffffff71;
+}
 .ToolbarContainer {
   position: absolute;
   width: 300px;
   top: 0;
   left: 50%;
-  z-index: 99;
   transform: translateX(-50%);
 }
 .MiniMapContainer {

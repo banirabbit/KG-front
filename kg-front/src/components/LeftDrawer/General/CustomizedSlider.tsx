@@ -46,7 +46,7 @@ const PrettoSlider = styled(Slider)({
 });
 
 export default function CustomizedSlider() {
-  const rela = useSelector((state:AppState) => state.GraphData.relationships)
+  const {relationships:rela, total:total} = useSelector((state:AppState) => state.GraphData)
   const [value, setValue] = useState(rela);
   const dispatch = useDispatch();
   const [timer, setTimer] = useState<NodeJS.Timeout|null>(null); // 声明定时器的变量
@@ -74,7 +74,7 @@ export default function CustomizedSlider() {
       value={value}
       onChange={handleChange}
       min={5}
-      max={8000}
+      max={total !== 0 ? total:10000}
     />
   );
 }

@@ -124,6 +124,8 @@ export default function Radial({
           <Grid item id="radialFocus">FocusNode: </Grid>
           <Grid item>
             <FormControl variant="standard" sx={{ m: 1, minWidth: 90 }}>
+            双击节点选择
+            {/* <FormControl variant="standard" sx={{ m: 1, minWidth: 90 }}>
               <Select
                 id="radial-focusnode-select"
                 value={focusNode}
@@ -136,6 +138,7 @@ export default function Radial({
                   26949
                 </MenuItem>
               </Select>
+            </FormControl> */}
             </FormControl>
           </Grid>
         </Grid>

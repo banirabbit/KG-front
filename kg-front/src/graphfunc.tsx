@@ -304,24 +304,30 @@ export const processNodesEdges = (
     switch (node.group) {
       case "企业":
         node.style.fill = gColors[1];//"#5479A6";
+        node.color = "#CACDFF";
         node.img = companysvg;
         break;
       case "专利":
         node.style.fill = gColors[0];// "#ED8F31";
+        node.color = "#FFD4F2"
         node.img = acceptsvg;
         break;
       case "人":
-        node.style.fill = gColors[4];//"#7AB7B2";
+        node.style.fill = gColors[5];//"#7AB7B2";
+        node.color = "#A9FFEB";
         node.img = peoplesvg;
         break;
       case "招投标":
-        node.style.fill = gColors[3];;
+        node.style.fill = gColors[3];
+        node.color = "#FFD3C9";
         node.img = documentsvg;
         break;
       default:
-        node.style.fill = gColors[5];;
+        node.style.fill = gColors[4];
+        node.color = "#EBF2FF";
         node.img = atom;
     }
+    
     if (currentNodeMap[node.id]) {
       console.warn("node exists already!", node.id);
       removeNodes.push(node);
@@ -530,7 +536,8 @@ export const processNodesEdges = (
       sourceNode.y =
         targetNode.y + targetDis * Math.sin(Math.random() * Math.PI * 2);
     }
-
+    edge.sourceNode = "";
+    edge.targetNode = "";
     // if (!sourceNode.x && !sourceNode.y && manipulatePosition) {
     //   sourceNode.x =
     //     manipulatePosition.x + 30 * Math.cos(Math.random() * Math.PI * 2);

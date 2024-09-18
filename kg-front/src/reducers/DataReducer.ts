@@ -7,7 +7,7 @@ const initState = {
   citys: [],
   isMapModel: false,
   length: 0,
-  relationships: 200,
+  relationships: 20,
   selectedNodes: 0,
   selectedInfo:{},
   loading: false,

@@ -26,7 +26,7 @@ export const handleElementId = (record: any) => {
   if (secondColonIndex !== -1) {
     id = inputString.substring(secondColonIndex + 1);
   } else {
-    id = record.properties.name;
+    id = inputString;
   }
   return id;
 };
@@ -52,7 +52,6 @@ export const handleNativeData = (nodes: Array<any>, record: any) => {
       ...nodes[existingNodeIndex],
     };
   } else {
-    node.type = "People";
     nodes.push(node);
   }
   return node;
@@ -81,7 +80,6 @@ export async function executeNeo4jQueryNode(
           label: any;
         }[] = [];
 
-    G6.registerNode("People", createNodeFromReact(People));
     data.forEach((record: GraphData) => {
       // 提取节点
       const node = handleNativeData(nodes, record.m);
@@ -99,7 +97,6 @@ export async function executeNeo4jQueryNode(
           target: relatedNode.id,
           label: record.r.type,
         });
-      } else {
       }
     });
     dispatch({
@@ -283,7 +280,6 @@ export const getAssignee =
     }
   };
 export const updateGraphData = (data: any) => {
-  console.log("updatedbData", data);
   return {
     type: GET_GRAPHDATA,
     data: data,
