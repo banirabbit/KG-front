@@ -236,33 +236,11 @@ export default function RegisterEdgeStyle() {
                   duration, // the duration for executing once
                 }
               );
-            } else {
-              const lineDash = keyShape.attr("lineDash");
-              const totalLength = lineDash[0] + lineDash[1];
-              let index = 0;
-              keyShape.animate(
-                () => {
-                  index++;
-                  if (index > totalLength) {
-                    index = 0;
-                  }
-                  const res = {
-                    lineDash,
-                    lineDashOffset: -index,
-                  };
-                  // returns the modified configurations here, lineDash and lineDashOffset here
-                  return res;
-                },
-                {
-                  repeat: true, // whether executes the animation repeatly
-                  duration, // the duration for executing once
-                }
-              );
             }
           } else {
             keyShape.stopAnimate();
-            const stroke = "#acaeaf";
-            const opacity = model.isReal ? realEdgeOpacity : virtualEdgeOpacity;
+            const stroke = "#44E6C1";
+            const opacity = 0.3
             keyShape.attr({
               stroke,
               strokeOpacity: opacity,

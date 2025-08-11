@@ -36,7 +36,7 @@ export default function Info() {
         )}
       </div>
 
-      <div className="searchfield">
+      {/* <div className="searchfield">
         <IconButton
           sx={{ p: "10px 10px 0 10px", color: "#E0E3E7" }}
           aria-label="menu"
@@ -58,7 +58,8 @@ export default function Info() {
         >
           <SearchIcon />
         </IconButton>
-      </div>
+      </div> */}
+
       <InfoFilter open={open} setOpen={setOpen}></InfoFilter>
     </div>
   );

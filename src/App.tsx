@@ -7,8 +7,8 @@ import { Container, Grid } from "@mui/material";
 import LeftDrawer from "./components/LeftDrawer/LeftDrawer";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "./store";
-import { Map, Marker, NavigationControl, InfoWindow } from "react-bmapgl";
 import {
+  AppendNode,
   clearSearchNodes,
   executeNeo4jQueryNode,
   fetchData,
@@ -31,8 +31,8 @@ import ReactDOM from "react-dom";
 import MapContainer from "./components/MapContainer/MapContainer";
 import RightTopStatistic from "./components/RightTopStatistic";
 import InfoAlert from "./components/Alert/InfoAlert";
-import zIndex from "@mui/material/styles/zIndex";
-import { setBigModel } from "./actions/layoutAction";
+
+import { setBigModel, setfocusNode } from "./actions/layoutAction";
 import WarnAlert from "./components/Alert/WarnAlert";
 import {
   CosmographProvider,
@@ -111,7 +111,13 @@ function App() {
   useEffect(() => {
     if (appendData !== undefined && Object.keys(appendData).length > 0) {
       let temp = {
-        nodes: [...dbdata.nodes, ...appendData.nodes],
+        nodes: [
+          ...dbdata.nodes,
+          ...appendData.nodes.map((a_node: any) => ({
+            ...a_node,
+            parentId: focusNode, // 给所有 appendData.nodes 加 parentId
+          })),
+        ],
         edges: [...dbdata.edges, ...appendData.edges],
       };
       //检查节点是否都在图中，都在的话就不展开了
@@ -120,6 +126,12 @@ function App() {
       const Id = new Set(dbdata.nodes.map((item: any) => item.id));
       isContain = temp.nodes.every((item) => Id.has(item.id));
       if (!isContain) {
+        temp = {
+          ...temp,
+          nodes: temp.nodes.map((node) =>
+            node.id === focusNode ? { ...node, expanded: true } : node
+          ),
+        };
         const { edges: processEdges, nodes: processNodes } = processNodesEdges(
           temp.nodes,
           temp.edges,
@@ -213,12 +225,52 @@ function App() {
         );
       }
       if ((!isMapModel && !isBigModel) || viewClick) {
-        const miniMap = new G6.Minimap({ container: miniMapContainer });
-        const grid = new G6.Grid();
         const toolbar = new G6.ToolBar({ container: toolbarContainer });
 
         CANVAS_WIDTH = container.scrollWidth;
         CANVAS_HEIGHT = (container.scrollHeight || 500) - 30;
+        const contextMenu = new G6.Menu({
+          itemTypes: ["node"],
+
+          getContent: (evt: any) => {
+            const cfg = evt.item.getModel();
+            console.log(cfg);
+            if (cfg.expanded || cfg.expended === false) {
+              return `<span id="uncombo">收起</span>`;
+            }
+            return `<span id="recombo">展开</span>`;
+          },
+          handleMenuClick: (target, item) => {
+            const id = item.getID();
+            if (target.innerHTML === "收起") {
+              // 1. 找出要删除的节点 id（所有 parentId === nodeId 的节点）
+              const removeIds = dbdata.nodes
+                .filter((n:any) => n.parentId === id)
+                .map((n:any) => n.id);
+
+              // 2. 更新节点列表：保留非删除节点，并把 nodeId 节点的 expanded 设为 false
+              const newNodes = dbdata.nodes
+                .filter((n:any) => !removeIds.includes(n.id))
+                .map((n:any) => (n.id === id ? { ...n, expanded: false } : n));
+
+              // 3. 过滤掉关联的边
+              const newEdges = dbdata.edges.filter(
+                (e:any) =>
+                  !removeIds.includes(e.source) && !removeIds.includes(e.target)
+              );
+
+              // 4. 组合新数据
+              const newDbdata = {
+                nodes: newNodes,
+                edges: newEdges,
+              };
+              setDBData(newDbdata);
+            } else {
+              dispatch(setfocusNode(id));
+              AppendNode(id)(dispatch);
+            }
+          },
+        });
         const graph = new G6.Graph({
           container: viewClick ? viewMapContainer : container,
           linkCenter: true,
@@ -227,8 +279,9 @@ function App() {
             default: ["drag-canvas", "zoom-canvas"],
           },
           animate: true,
-          plugins: [toolbar],
+          plugins: [toolbar, contextMenu],
         });
+
         graph.data(dbdata);
 
         const layoutConfig: any = {
@@ -433,8 +486,8 @@ function App() {
       );
       setOriDBdata(dbdata);
       setDBData({ nodes, edges });
-    }else if(oriDBdata !== undefined) {
-      setDBData(oriDBdata)
+    } else if (oriDBdata !== undefined) {
+      setDBData(oriDBdata);
     }
   }, [viewClick]);
 
@@ -479,7 +532,12 @@ function App() {
       <div ref={toolbarRef} className="ToolbarContainer"></div>
       <div ref={miniMapRef} className="MiniMapContainer"></div>
       {/* 大数据模式使用g6查看详细情况的容器 */}
-      <div className="viewContainer" ref={viewRef} style={{zIndex:viewClick ? 99 : -1}}></div> : <></>
+      <div
+        className="viewContainer"
+        ref={viewRef}
+        style={{ zIndex: viewClick ? 99 : -1 }}
+      ></div>{" "}
+      : <></>
       <InfoAlert
         text={"布局中，请稍侯..."}
         open={alertOpen}

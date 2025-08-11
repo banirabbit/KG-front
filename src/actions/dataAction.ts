@@ -183,7 +183,8 @@ export const AppendNode = (nodeId: string) => async (dispatch: Function) => {
       console.log("get data");
       data.forEach((record: { r: any; n: any }) => {
         // 提取节点
-        const node = handleNativeData(nodes, record.n);
+        let node = handleNativeData(nodes, record.n);
+        
         //提取边id
         const edgeid = handleElementId(record.r);
         const existingEdgeIndex = edges.findIndex(
@@ -198,7 +199,7 @@ export const AppendNode = (nodeId: string) => async (dispatch: Function) => {
           });
         }
       });
-      console.log("dispatch start");
+      
       dispatch({
         type: GET_APPENDNODE,
         data: {

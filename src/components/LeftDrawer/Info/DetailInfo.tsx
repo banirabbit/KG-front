@@ -76,12 +76,12 @@ export default function DetailInfo() {
           ))}
         </ul>
       </div>
-      <div className="detail" style={{ textAlign: "center" }}>
+      {/* <div className="detail" style={{ textAlign: "center" }}>
         <h4>FOUND {selectedNodes} RECORD</h4>
         <button style={{ backgroundColor: "#D1A9B5" }}>OPEN TABLE</button>
         <h4>EXPORT DATA</h4>
         <button style={{ backgroundColor: "#9BAFB8" }}>EXPORT</button>
-      </div>
+      </div> */}
     </div>
   );
 }

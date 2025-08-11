@@ -5,55 +5,59 @@ import peoplesvg from "./icons/user.svg";
 import acceptsvg from "./icons/accept.svg";
 import atom from "./icons/atom.svg";
 import { Opacity, Visibility } from "@mui/icons-material";
-import { AppendNode, setSelectInfo, setSelectedNode } from "./actions/dataAction";
+import {
+  AppendNode,
+  setSelectInfo,
+  setSelectedNode,
+} from "./actions/dataAction";
 import { setfocusNode } from "./actions/layoutAction";
 const { uniqueId } = G6.Util;
 let selectedNodes = 0;
 const lightColors = [
-  '#8FE9FF',
-  '#87EAEF',
-  '#FFC9E3',
-  '#A7C2FF',
-  '#FFA1E3',
-  '#FFE269',
-  '#BFCFEE',
-  '#FFA0C5',
-  '#D5FF86',
+  "#8FE9FF",
+  "#87EAEF",
+  "#FFC9E3",
+  "#A7C2FF",
+  "#FFA1E3",
+  "#FFE269",
+  "#BFCFEE",
+  "#FFA0C5",
+  "#D5FF86",
 ];
 const darkColors = [
-  '#7DA8FF',
-  '#44E6C1',
-  '#FF68A7',
-  '#7F86FF',
-  '#AE6CFF',
-  '#FF5A34',
-  '#5D7092',
-  '#FF6565',
-  '#6BFFDE',
+  "#7DA8FF",
+  "#44E6C1",
+  "#FF68A7",
+  "#7F86FF",
+  "#AE6CFF",
+  "#FF5A34",
+  "#5D7092",
+  "#FF6565",
+  "#6BFFDE",
 ];
 const uLightColors = [
-  '#CFF6FF',
-  '#BCFCFF',
-  '#FFECF5',
-  '#ECFBFF',
-  '#EAD9FF',
-  '#FFF8DA',
-  '#DCE2EE',
-  '#FFE7F0',
-  '#EEFFCE',
+  "#CFF6FF",
+  "#BCFCFF",
+  "#FFECF5",
+  "#ECFBFF",
+  "#EAD9FF",
+  "#FFF8DA",
+  "#DCE2EE",
+  "#FFE7F0",
+  "#EEFFCE",
 ];
 const uDarkColors = [
-  '#CADBFF',
-  '#A9FFEB',
-  '#FFC4DD',
-  '#CACDFF',
-  '#FFD4F2',
-  '#FFD3C9',
-  '#EBF2FF',
-  '#FFCBCB',
-  '#CAFFF3',
+  "#CADBFF",
+  "#A9FFEB",
+  "#FFC4DD",
+  "#CACDFF",
+  "#FFD4F2",
+  "#FFD3C9",
+  "#EBF2FF",
+  "#FFCBCB",
+  "#CAFFF3",
 ];
-const gColors:any[] = [];
+const gColors: any[] = [];
 const unlightColorMap = new Map();
 
 export const descendCompare = (p: string) => {
@@ -64,12 +68,11 @@ export const descendCompare = (p: string) => {
     return b - a; // 降序
   };
 };
-const refreshDragedNodePosition = (e:any) =>{
-  
-  const model = e.item.get('model');
+const refreshDragedNodePosition = (e: any) => {
+  const model = e.item.get("model");
   model.fx = e.x;
   model.fy = e.y;
-}
+};
 export const clearFocusItemState: (arg0: any) => void = (graph: any) => {
   if (!graph) return;
   clearFocusNodeState(graph);
@@ -98,7 +101,7 @@ export function bindListener(
   layout: any,
   clearFocusEdgeState: (arg0: any) => void,
   clearFocusItemState: (arg0: any) => void,
-  dispatch: Function,
+  dispatch: Function
 ) {
   const nodes = graph.getNodes();
   const edges = graph.getEdges();
@@ -138,9 +141,9 @@ export function bindListener(
     const { item } = evt;
     const model = item.getModel();
     const currentLabel = model.label;
-     item.update({
-       label: model.oriLabel,
-     });
+    item.update({
+      label: model.oriLabel,
+    });
     model.oriLabel = currentLabel;
   });
 
@@ -152,9 +155,9 @@ export function bindListener(
       label: model.oriLabel,
     });
     model.oriLabel = currentLabel;
-   item.toFront();
-     item.getSource().toFront();
-     item.getTarget().toFront();
+    item.toFront();
+    item.getSource().toFront();
+    item.getTarget().toFront();
   });
 
   graph.on("edge:mouseleave", (evt: any) => {
@@ -175,13 +178,14 @@ export function bindListener(
       clearFocusItemState(graph);
       selectedNodes = 1;
       dispatch(setSelectedNode(selectedNodes));
-    } else {clearFocusEdgeState(graph);
+    } else {
+      clearFocusEdgeState(graph);
       selectedNodes++;
       dispatch(setSelectedNode(selectedNodes));
     }
     const { item } = evt;
-    console.log(item._cfg)
-    if(item._cfg.model !== undefined) {
+    console.log(item._cfg);
+    if (item._cfg.model !== undefined) {
       dispatch(setSelectInfo(item._cfg.model));
     }
     //降低所有未选中节点透明度
@@ -190,7 +194,7 @@ export function bindListener(
     });
     // highlight the clicked node, it is down by click-select
     graph.setItemState(item, "focus", true);
-    
+
     // if (!shiftKeydown) {
     //   // 将相关边也高亮
     //   const relatedEdges = item.getEdges();
@@ -208,11 +212,9 @@ export function bindListener(
     nodes.forEach((node: Array<object>) =>
       graph.setItemState(node, "opacity", false)
     );
-    
-    
+
     dispatch(setfocusNode(cfg.id));
     AppendNode(cfg.id)(dispatch);
-    
   });
   // click edge to show the detail of integrated edge drawer
   graph.on("edge:click", (evt: any) => {
@@ -239,20 +241,17 @@ export function bindListener(
       graph.getGroup().getCanvasBBox()
     );
   });
-  graph.on('node:dragstart', (e:any) => {
-    
+  graph.on("node:dragstart", (e: any) => {
     refreshDragedNodePosition(e);
   });
-  graph.on('node:drag', (e:any) => {
+  graph.on("node:drag", (e: any) => {
     console.log("drag");
     refreshDragedNodePosition(e);
-    console.log(e)
+    console.log(e);
   });
-  graph.on('node:dragend', (e:any) => {
-
-    e.item.get('model').fx = null;
-    e.item.get('model').fy = null;
-    
+  graph.on("node:dragend", (e: any) => {
+    e.item.get("model").fx = null;
+    e.item.get("model").fy = null;
   });
 }
 // 截断长文本。length 为文本截断后长度，elipsis 是后缀
@@ -277,7 +276,7 @@ export const processNodesEdges = (
   height: number,
   largeGraphMode: boolean,
   edgeLabelVisible: boolean,
-  isBigModel:boolean,
+  isBigModel: boolean
 ) => {
   if (!nodes || nodes.length === 0) return {};
   const currentNodeMap: any = {};
@@ -289,9 +288,12 @@ export const processNodesEdges = (
   const removeNodes: any[] = [];
   //颜色设置
   lightColors.forEach((lcolor, i) => {
-    gColors.push('l(0) 0:' + lcolor + ' 1:' + darkColors[i]);
-    unlightColorMap.set(gColors[i], 'l(0) 0:' + uLightColors[i] + ' 1:' + uDarkColors[i]);
-    });
+    gColors.push("l(0) 0:" + lcolor + " 1:" + darkColors[i]);
+    unlightColorMap.set(
+      gColors[i],
+      "l(0) 0:" + uLightColors[i] + " 1:" + uDarkColors[i]
+    );
+  });
   nodes.forEach((node) => {
     node.type = isBigModel ? "bigModel-node" : "real-node";
     node.labelLineNum = undefined;
@@ -301,53 +303,26 @@ export const processNodesEdges = (
     node.inDegree = 0;
     node.outDegree = 0;
     node.style = {};
-    switch (node.group) {
-      case "企业":
-        node.style.fill = gColors[1];//"#5479A6";
-        node.color = "#CACDFF";
-        node.img = companysvg;
-        break;
-      case "专利":
-        node.style.fill = gColors[0];// "#ED8F31";
-        node.color = "#FFD4F2"
-        node.img = acceptsvg;
-        break;
-      case "人":
-        node.style.fill = gColors[5];//"#7AB7B2";
-        node.color = "#A9FFEB";
-        node.img = peoplesvg;
-        break;
-      case "招投标":
-        node.style.fill = gColors[3];
-        node.color = "#FFD3C9";
-        node.img = documentsvg;
-        break;
-      default:
-        node.style.fill = gColors[4];
-        node.color = "#EBF2FF";
-        node.img = atom;
-    }
-    
+    const icons = [companysvg, acceptsvg, peoplesvg, documentsvg, atom];
+    const fillColors = [
+      "#CACDFF",
+      "#FFD4F2",
+      "#A9FFEB",
+      "#FFD3C9",
+      "#EBF2FF",
+      "#FFF5BA",
+    ];
+    const randomPick = <T extends unknown>(arr: T[]): T =>
+      arr[Math.floor(Math.random() * arr.length)];
+    node.style.fill = randomPick(gColors);
+    node.color = randomPick(fillColors);
+    node.img = randomPick(icons);
+
     if (currentNodeMap[node.id]) {
       console.warn("node exists already!", node.id);
       removeNodes.push(node);
     }
     currentNodeMap[node.id] = node;
-    // if (node.count > maxNodeCount) maxNodeCount = node.count;
-    // const cachePosition = cachePositions ? cachePositions[node.id] : undefined;
-    // if (cachePosition) {
-    //   node.x = cachePosition.x;
-    //   node.y = cachePosition.y;
-    //   node.new = false;
-    // } else {
-    //   node.new = isNewGraph ? false : true;
-    //   if (manipulatePosition && !node.x && !node.y) {
-    //     node.x =
-    //       manipulatePosition.x + 30 * Math.cos(Math.random() * Math.PI * 2);
-    //     node.y =
-    //       manipulatePosition.y + 30 * Math.sin(Math.random() * Math.PI * 2);
-    //   }
-    // }
   });
 
   let maxCount = -Infinity;
@@ -387,7 +362,7 @@ export const processNodesEdges = (
     //    if (edge.count > maxCount) maxCount = edge.count;
     //    if (edge.count < minCount) minCount = edge.count;
   });
-  let tempnodes:any[] = [];
+  let tempnodes: any[] = [];
   nodes.forEach((item) => tempnodes.push(item));
   tempnodes.sort(descendCompare("degree"));
   const maxDegree = tempnodes[0].degree || 1;
@@ -497,7 +472,7 @@ export const processNodesEdges = (
           lineWidth: 2,
           cursor: "pointer",
           opacity: 0.3,
-          stroke:  gColors[1],
+          stroke: gColors[1],
         };
     edge.labelCfg = isBigModel
       ? { style: { opacity: 0 } }

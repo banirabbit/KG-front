@@ -25,7 +25,7 @@ export const setBigModel = (data:boolean) => async (dispatch: Function) => {
   }
   )
 }
-export const setfocusNode = (data:boolean) => async (dispatch: Function) => {
+export const setfocusNode = (data:string) => async (dispatch: Function) => {
   dispatch({
     type: SET_FOCUS,
     data: data,
