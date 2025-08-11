@@ -79,16 +79,12 @@ export default function Actions({ contentOpen }: ChildProps) {
       className={`nodestyleContainer ${contentOpen.actions ? "" : "closed"}`}
     >
       <ul className="nodestyle">
-        <li>
+        {/* <li>
           <div style={{ lineHeight: "20px" }}>MapModel </div>
           <IOSSwitch sx={{ m: 1 }} checked={isMapModel} onClick={handleMapOpen} />
-        </li>
-        <li>
-        <div className="divider"></div>
-        </li>
-        
+        </li> */}
+        <li><div style={{ lineHeight: "20px" }}>关系数量</div></li>
         <li className="nodeNumber">
-        <div style={{ lineHeight: "20px" }}>Relationships</div>
         <CustomizedSlider></CustomizedSlider>
         </li>
       </ul>

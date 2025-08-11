@@ -36,10 +36,10 @@ export const handleNativeData = (nodes: Array<any>, record: any) => {
   //提取节点id
   let nodeid = handleElementId(record);
   //节点类型
-  const group = record.labels[0] ? record.labels[0] : nodeid;
+  const group = record.label ? record.label : nodeid;
   const node = {
     ...record.properties,
-    label: record.properties.name,
+    label: record.name,
     group: group,
     id: nodeid,
   };

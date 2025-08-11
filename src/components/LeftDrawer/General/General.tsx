@@ -54,23 +54,6 @@ export default function General() {
             </div>
           </button>
         </li>
-        <li>
-          <button onClick={() => toggleContent("node")}>
-            <div>节点样式</div>
-            <div className="arrow">
-              <SideArrow type={arrow.node}></SideArrow>
-            </div>
-          </button>
-        </li>
-        <NodeStyle contentOpen={contentOpen}></NodeStyle>
-        <li>
-          <button>
-            <div>边样式</div>
-            <div className="arrow">
-              <SideArrow type="icon-down"></SideArrow>
-            </div>
-          </button>
-        </li>
         
         <li>
           <button onClick={() => toggleContent("actions")}>

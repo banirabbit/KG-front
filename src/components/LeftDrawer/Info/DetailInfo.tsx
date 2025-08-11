@@ -16,7 +16,6 @@ export default function DetailInfo() {
     "degree",
     "inDegree",
     "isReal",
-    "label",
     "oriLabel",
     "labelLineNum",
     "oriFontSize",
@@ -26,6 +25,8 @@ export default function DetailInfo() {
     "size",
     "outDegree",
     "id",
+    "startPoint",
+    "endPoint",
   ];
   // 将对象的每一项映射为一个包含索引和值的对象数组
   const filteredItems = Object.entries(selectedInfo)
@@ -57,10 +58,9 @@ export default function DetailInfo() {
       onMouseLeave={handleDivMouseLeave}
     >
       <h2>{selectedInfo.name}</h2>
-      <span style={{ margin: "5px", fontSize: "14px" }}>Selected Node</span>
       <div className="detail">
         <div style={{ fontSize: "14px", fontWeight: "700", margin: "5px" }}>
-          NODE DATA
+          详情信息
         </div>
         <ul
           className={showUl}
@@ -69,19 +69,17 @@ export default function DetailInfo() {
         >
           {filteredItems.map((item, index) => (
             <React.Fragment key={index}>
-              <li style={{fontWeight:600}}>{item.key}</li>
-              <li style={{color:"#ffffffa8"}}>{item.value}</li>
+              <li style={{ fontWeight: 600 }}>{item.key}</li>
+              <li style={{ color: "#ffffffa8" }}>
+                {typeof item.value === "object"
+                  ? JSON.stringify(item.value)
+                  : String(item.value)}
+              </li>
               <div className="divider" style={{ marginBottom: 0 }}></div>
             </React.Fragment>
           ))}
         </ul>
       </div>
-      {/* <div className="detail" style={{ textAlign: "center" }}>
-        <h4>FOUND {selectedNodes} RECORD</h4>
-        <button style={{ backgroundColor: "#D1A9B5" }}>OPEN TABLE</button>
-        <h4>EXPORT DATA</h4>
-        <button style={{ backgroundColor: "#9BAFB8" }}>EXPORT</button>
-      </div> */}
     </div>
   );
 }

@@ -30,7 +30,7 @@ export default function Info() {
       <div className="detailInfo">
       <div className="divider"></div>
         {Object.keys(selectedInfo).length === 0 ? (
-          <div className="notice">Select a node to show information</div>
+          <div className="notice">请选择一个对象</div>
         ) : (
           <DetailInfo></DetailInfo>
         )}

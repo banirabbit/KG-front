@@ -207,6 +207,10 @@ export function bindListener(
     const { item } = evt;
     // highlight the clicked edge
     graph.setItemState(item, "focus", true);
+    console.log(item);
+    if (item && item._cfg.model !== undefined) {
+      dispatch(setSelectInfo(item._cfg.model));
+    }
   });
 
   // click canvas to cancel all the focus state
@@ -216,11 +220,6 @@ export function bindListener(
     dispatch(setSelectedNode(0));
     nodes.forEach((node: Array<object>) =>
       graph.setItemState(node, "opacity", false)
-    );
-    console.log(
-      graph.getGroup(),
-      graph.getGroup().getBBox(),
-      graph.getGroup().getCanvasBBox()
     );
   });
   graph.on("node:dragstart", (e: any) => {

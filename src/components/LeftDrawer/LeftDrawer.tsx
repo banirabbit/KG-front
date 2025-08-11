@@ -32,19 +32,13 @@ export default function LeftDrawer() {
             onClick={() => changeContent("Content 1")}
             className="iconfont"
           >
-            general
+            常规
           </button>
           <button
             onClick={() => changeContent("Content 2")}
             className="iconfont"
           >
-            info
-          </button>
-          <button
-            onClick={() => changeContent("Content 3")}
-            className="iconfont"
-          >
-            layout
+            详情信息
           </button>
         </div>
         {selectedContent === "Content 1" ? (
