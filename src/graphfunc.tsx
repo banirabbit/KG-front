@@ -4,6 +4,7 @@ import documentsvg from "./icons/document.svg";
 import peoplesvg from "./icons/user.svg";
 import acceptsvg from "./icons/accept.svg";
 import atom from "./icons/atom.svg";
+
 import { Opacity, Visibility } from "@mui/icons-material";
 import {
   AppendNode,
@@ -185,37 +186,18 @@ export function bindListener(
     }
     const { item } = evt;
     console.log(item._cfg);
-    if (item._cfg.model !== undefined) {
+    if (item && item._cfg.model !== undefined) {
       dispatch(setSelectInfo(item._cfg.model));
     }
-    //降低所有未选中节点透明度
+    if(item) {//降低所有未选中节点透明度
     nodes.forEach((node: Array<Object>) => {
       graph.setItemState(node, "opacity", true);
     });
     // highlight the clicked node, it is down by click-select
     graph.setItemState(item, "focus", true);
-
-    // if (!shiftKeydown) {
-    //   // 将相关边也高亮
-    //   const relatedEdges = item.getEdges();
-    //   relatedEdges.forEach((edge: Array<Object>) => {
-    //     graph.setItemState(edge, "focus", true);
-    //   });
-    // }
+    }
   });
-  graph.on("node:dblclick", (evt: any) => {
-    const { item } = evt;
-    const cfg = item._cfg;
-    clearFocusItemState(graph);
-    selectedNodes = 0;
-    dispatch(setSelectedNode(0));
-    nodes.forEach((node: Array<object>) =>
-      graph.setItemState(node, "opacity", false)
-    );
 
-    dispatch(setfocusNode(cfg.id));
-    AppendNode(cfg.id)(dispatch);
-  });
   // click edge to show the detail of integrated edge drawer
   graph.on("edge:click", (evt: any) => {
     if (layout.instance !== undefined) {
@@ -303,6 +285,20 @@ export const processNodesEdges = (
     node.inDegree = 0;
     node.outDegree = 0;
     node.style = {};
+    // 简单字符串哈希（固定输出 0 ~ 2^32-1）
+    function stringHash(str: string): number {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0; // 转为 32 位整数
+      }
+      return Math.abs(hash);
+    }
+
+    // 根据种子选择数组中的一个元素
+    function pickFromSeed<T>(arr: T[], seed: number): T {
+      return arr[seed % arr.length];
+    }
     const icons = [companysvg, acceptsvg, peoplesvg, documentsvg, atom];
     const fillColors = [
       "#CACDFF",
@@ -312,11 +308,10 @@ export const processNodesEdges = (
       "#EBF2FF",
       "#FFF5BA",
     ];
-    const randomPick = <T extends unknown>(arr: T[]): T =>
-      arr[Math.floor(Math.random() * arr.length)];
-    node.style.fill = randomPick(gColors);
-    node.color = randomPick(fillColors);
-    node.img = randomPick(icons);
+    const seed = stringHash(node.group); // 分类名 → 固定种子
+    node.style.fill = pickFromSeed(gColors, seed);
+    node.color = pickFromSeed(fillColors, seed + 1); // +1 让颜色和 fill 不一样
+    node.img = pickFromSeed(icons, seed + 2);
 
     if (currentNodeMap[node.id]) {
       console.warn("node exists already!", node.id);

@@ -107,6 +107,40 @@ function App() {
   useEffect(() => {
     dispatch(fetchTotalNumber());
   }, []);
+  const [menuAction, setMenuAction] = useState<{
+    type: string;
+    nodeId: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!menuAction) return;
+
+    const { type, nodeId } = menuAction;
+
+    if (type === "收起") {
+      dispatch(setfocusNode(nodeId));
+      const removeIds = dbdata.nodes
+        .filter((n: any) => n.parentId === nodeId)
+        .map((n: any) => n.id);
+
+      const newNodes = dbdata.nodes
+        .filter((n: any) => !removeIds.includes(n.id))
+        .map((n: any) => (n.id === nodeId ? { ...n, expanded: false } : n));
+
+      const newEdges = dbdata.edges.filter(
+        (e: any) =>
+          !removeIds.includes(e.source) && !removeIds.includes(e.target)
+      );
+
+      setDBData({ nodes: newNodes, edges: newEdges });
+    } else if (type === "展开") {
+      dispatch(setfocusNode(nodeId));
+      AppendNode(nodeId)(dispatch);
+    }
+
+    // 执行完重置
+    setMenuAction(null);
+  }, [menuAction, dbdata, dispatch]);
   //展开节点
   useEffect(() => {
     if (appendData !== undefined && Object.keys(appendData).length > 0) {
@@ -242,33 +276,7 @@ function App() {
           },
           handleMenuClick: (target, item) => {
             const id = item.getID();
-            if (target.innerHTML === "收起") {
-              // 1. 找出要删除的节点 id（所有 parentId === nodeId 的节点）
-              const removeIds = dbdata.nodes
-                .filter((n:any) => n.parentId === id)
-                .map((n:any) => n.id);
-
-              // 2. 更新节点列表：保留非删除节点，并把 nodeId 节点的 expanded 设为 false
-              const newNodes = dbdata.nodes
-                .filter((n:any) => !removeIds.includes(n.id))
-                .map((n:any) => (n.id === id ? { ...n, expanded: false } : n));
-
-              // 3. 过滤掉关联的边
-              const newEdges = dbdata.edges.filter(
-                (e:any) =>
-                  !removeIds.includes(e.source) && !removeIds.includes(e.target)
-              );
-
-              // 4. 组合新数据
-              const newDbdata = {
-                nodes: newNodes,
-                edges: newEdges,
-              };
-              setDBData(newDbdata);
-            } else {
-              dispatch(setfocusNode(id));
-              AppendNode(id)(dispatch);
-            }
+            setMenuAction({ type: target.innerHTML, nodeId: id });
           },
         });
         const graph = new G6.Graph({

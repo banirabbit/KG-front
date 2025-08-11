@@ -32,10 +32,11 @@ export const handleElementId = (record: any) => {
 };
 //处理neo4j返回的原始数据 nodes:已有的节点数组，用于查重 node:从neo4j返回的数据
 export const handleNativeData = (nodes: Array<any>, record: any) => {
-  //节点类型
-  const group = record.labels[0];
+  
   //提取节点id
   let nodeid = handleElementId(record);
+  //节点类型
+  const group = record.labels[0] ? record.labels[0] : nodeid;
   const node = {
     ...record.properties,
     label: record.properties.name,
