@@ -264,6 +264,9 @@ function App() {
         CANVAS_WIDTH = container.scrollWidth;
         CANVAS_HEIGHT = (container.scrollHeight || 500) - 30;
         const contextMenu = new G6.Menu({
+          trigger: 'contextmenu',   // 显式右键触发
+          offsetX: 6,
+          offsetY: 6,
           itemTypes: ["node"],
 
           getContent: (evt: any) => {
@@ -418,14 +421,14 @@ function App() {
           });
         }
         setGraphConfig(graph);
-        if (typeof window !== "undefined" && !isMapModel && !isBigModel) {
-          window.onresize = () => {
-            if (!graph || graph.get("destroyed")) return;
-            if (!container || !container.scrollWidth || !container.scrollHeight)
-              return;
-            graph.changeSize(container.scrollWidth, container.scrollHeight);
-          };
-        }
+        // if (typeof window !== "undefined" && !isMapModel && !isBigModel) {
+        //   window.onresize = () => {
+        //     if (!graph || graph.get("destroyed")) return;
+        //     if (!container || !container.scrollWidth || !container.scrollHeight)
+        //       return;
+        //     graph.changeSize(container.scrollWidth, container.scrollHeight);
+        //   };
+        // }
         return () => {
           // 销毁G6图形实例
           graph.destroy();
@@ -439,28 +442,39 @@ function App() {
   const [viewDetail, setViewDetail] = useState(false);
   const [viewClick, setViewClick] = useState(false);
   const [oriDBdata, setOriDBdata] = useState<{ nodes: any[]; edges: any[] }>(); //切换视图之前保存原始数据
-  if (typeof window !== "undefined") {
-    window.onwheel = () => {
-      console.log(1);
-      // 清除旧的定时器
-      if (timer !== null) {
-        clearTimeout(timer);
-      }
+  const cosmoContainerRef = useRef<HTMLDivElement | null>(null);
+  const wheelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const WHEEL_IDLE_MS = 1000; // 停止滚动 1 秒后执行
+  useEffect(() => {
+    // 优先绑定到当前“可滚动/接收滚轮”的容器：大图用 Cosmograph 容器，小图用 G6 容器
+    const target: EventTarget =
+      (isBigModel ? cosmoContainerRef.current : myRef.current) ?? window;
 
-      // 设置一个新的定时器，在用户停止滑动后1秒执行
-      setTimer(
-        setTimeout(function () {
-          let screenNodeMap =
-            cosmographRef.current?.getSampledNodePositionsMap();
-          if (screenNodeMap !== undefined && screenNodeMap?.size <= 200) {
-            setViewDetail(true);
-          } else if (screenNodeMap !== undefined && screenNodeMap?.size > 200) {
-            setViewDetail(false);
-          }
-        }, 300)
+    const onWheel = () => {
+      if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
+      wheelTimerRef.current = setTimeout(() => {
+        // Cosmograph 模式下才有 getSampledNodePositionsMap；没有就直接返回
+        const map = cosmographRef.current?.getSampledNodePositionsMap?.();
+        if (!map) return;
+        setViewDetail(map.size <= 200);
+      }, WHEEL_IDLE_MS);
+    };
+
+    // 用 capture 拦截，避免被图形库阻断；passive 提升滚动性能
+    target.addEventListener("wheel", onWheel as EventListener, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
+      target.removeEventListener(
+        "wheel",
+        onWheel as EventListener,
+        { capture: true } as any
       );
     };
-  }
+  }, [isBigModel]); // 切换视图时重绑
   useEffect(() => {
     if (viewClick) {
       let screenNodeMap = cosmographRef.current?.getSampledNodePositionsMap();
@@ -502,31 +516,32 @@ function App() {
   return (
     <Grid container className="kgBackground">
       {loading ? <></> : <Loading></Loading>}
-      {isMapModel ? <MapContainer></MapContainer> : <></>}
       {isBigModel ? (
-        <CosmographProvider
-          nodes={cosmdata !== undefined ? cosmdata.nodes : []}
-          links={cosmdata !== undefined ? cosmdata.edges : []}
-        >
-          <Cosmograph
-            ref={cosmographRef}
-            nodeSize={(d: any) => d.size}
-            nodeLabelAccessor={(d: any) => d.label}
-            nodeColor={(d: any) => d.color}
-            simulationFriction={1}
-            simulationLinkSpring={0.1}
-            simulationLinkDistance={20}
-            simulationRepulsion={1}
-            simulationDecay={8000}
-            simulationGravity={0.05}
-            nodeLabelColor={"#D4D4D4"}
-            hoveredNodeLabelColor={"#FFDA4A"}
-            disableSimulation={false}
-            nodeSamplingDistance={1}
-            fitViewOnInit={true}
-            backgroundColor={"#363B46"}
-          />
-        </CosmographProvider>
+        <div ref={cosmoContainerRef} style={{ height: "100%", width: "100%" }}>
+          <CosmographProvider
+            nodes={cosmdata !== undefined ? cosmdata.nodes : []}
+            links={cosmdata !== undefined ? cosmdata.edges : []}
+          >
+            <Cosmograph
+              ref={cosmographRef}
+              nodeSize={(d: any) => d.size}
+              nodeLabelAccessor={(d: any) => d.label}
+              nodeColor={(d: any) => d.color}
+              simulationFriction={1}
+              simulationLinkSpring={0.1}
+              simulationLinkDistance={20}
+              simulationRepulsion={1}
+              simulationDecay={8000}
+              simulationGravity={0.05}
+              nodeLabelColor={"#D4D4D4"}
+              hoveredNodeLabelColor={"#FFDA4A"}
+              disableSimulation={false}
+              nodeSamplingDistance={1}
+              fitViewOnInit={true}
+              backgroundColor={"#363B46"}
+            />
+          </CosmographProvider>
+        </div>
       ) : (
         <></>
       )}

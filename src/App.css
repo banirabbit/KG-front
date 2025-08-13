@@ -1,3 +1,22 @@
+/* 菜单设高 z-index，确保在最上层 */
+.g6-component-contextmenu {
+  position: fixed !important;  /* 关键：脱离被裁剪的定位上下文 */
+  z-index: 10000;
+  background: #2b2f3a;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 6px;
+  padding: 6px 0;
+  min-width: 120px;
+  pointer-events: auto;
+}
+.g6-component-contextmenu > * {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.g6-component-contextmenu > *:hover {
+  background: rgba(255,255,255,.08);
+}
 .kgBackground {
   background-color: rgb(53, 59, 70);
   width: 100%;
@@ -18,6 +37,7 @@
   z-index: 99;
   background-color: rgb(53, 59, 70);
   border: 2px solid #ffffff71;
+  overflow: visible;
 }
 .ToolbarContainer {
   position: absolute;
