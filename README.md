@@ -1,7 +1,7 @@
 # 知识图谱可视化项目
 ## 服务端启动
 ### 配置neoj4数据库
-建立自己的neo4j数据库，然后修改server/index.js中的配置信息 
+建立自己的neo4j数据库，然后修改App.tsx和server/index.js中的配置信息 
 #### 数据格式
 节点：
 ```
